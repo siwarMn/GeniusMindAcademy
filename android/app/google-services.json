@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "160815120509",
+    "project_id": "genius-mind-academy-5ff30",
+    "storage_bucket": "genius-mind-academy-5ff30.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:160815120509:android:004d314f010a8a7ebcf114",
+        "android_client_info": {
+          "package_name": "com.synda.codajoy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQY0JK1Ahf6NlWgq8TBMe1ALzpuWUWm-M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
