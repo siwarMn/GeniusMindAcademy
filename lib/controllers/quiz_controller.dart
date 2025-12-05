@@ -1,8 +1,7 @@
 import 'package:codajoy/controllers/login_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:codajoy/services/quiz_service.dart';
 
 // Define the Quiz model class
 class Quiz {
@@ -46,19 +45,14 @@ class QuizListScreen extends StatefulWidget {
 class _QuizListScreenState extends State<QuizListScreen> {
   late Future<List<Quiz>> _futureQuizzes;
   LoginController login = Get.put(LoginController());
+  QuizService quizService = MockQuizService();
+
   Future<List<Quiz>> getAllQuizzes() async {
-    Future<String?> authtoken = login.gettoken();
-    final response = await http.get(
-      Uri.parse('http://localhost:8080/api/v1/auth/getAllQuizzes'),
-      headers: {'Authorization': '$authtoken'},
-    );
-    print(response.statusCode);
-    if (response.statusCode == 200) {
-      print(response.statusCode);
-      Iterable jsonResponse = json.decode(response.body);
-      return jsonResponse.map((quiz) => Quiz.fromJson(quiz)).toList();
-    } else {
-      throw Exception('Failed to load quizzes');
+    try {
+      return await quizService.getAllQuizzes();
+    } catch (e) {
+      print(e);
+      return [];
     }
   }
 

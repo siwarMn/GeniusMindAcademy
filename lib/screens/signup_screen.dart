@@ -1,7 +1,8 @@
 import 'package:codajoy/controllers/register_controller.dart';
+import 'package:codajoy/screens/login_screen.dart';
+import 'package:codajoy/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'login_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({Key? key}) : super(key: key);
@@ -11,202 +12,172 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  RegisterController registercontroller = Get.put(
-    RegisterController()
-  );
-  // Text editing controllers
+  final RegisterController registerController = Get.put(RegisterController());
+
+  // Controllers
   final usernameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
-  final selectedniveauController = TextEditingController();
-  // Options pour le champ de niveau
+  final niveauController = TextEditingController();
 
-  // Form key for form validation
   final _formKey = GlobalKey<FormState>();
 
-  // Sign user up method
-  void signUserUp() {
+  void _handleSignup() {
     if (_formKey.currentState!.validate()) {
-      registercontroller.register(emailController.text, usernameController.text ,confirmPasswordController.text, passwordController.text,selectedniveauController.text);
-      // Ajoutez ici la logique pour enregistrer l'utilisateur dans la base de données ou effectuer d'autres opérations d'inscription
-      print('Nom d\'utilisateur: ${usernameController.text}');
-      print('Email: ${emailController.text}');
-      print('Mot de passe: ${passwordController.text}');
-      print('Confirmer mot de passe: ${confirmPasswordController.text}');
-      print('Niveau: ${selectedniveauController.text}');
+      registerController.register(
+        emailController.text,
+        usernameController.text,
+        confirmPasswordController
+            .text, // Assuming this maps to name/lastname as per controller
+        passwordController.text,
+        niveauController.text,
+      );
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Center(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(height: 20),
-                  Container(
-                    color: Colors.white, //
-                    child: Image.asset(
-                      'assets/images/logoo.png',
-                      height: 200,width: 200,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: AppTheme.primaryColor),
+          onPressed: () => Get.back(),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 10),
+                Text(
+                  "Créer un compte",
+                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                        color: AppTheme.primaryColor,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "Rejoignez-nous pour commencer votre apprentissage!",
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 30),
 
+                // Image (Optional, keeping consistent with old design if wanted, or smaller)
+                // SizedBox(height: 100, child: Image.asset('assets/images/logoo.png')),
 
-                  // Username textfield
-                  _buildTextField(
-                    controller: usernameController,
-                    hintText: "Nom d'utilisateur",
-                    obscureText: false,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Veuillez saisir votre nom d\'utilisateur';
-                      }
-                      if(value.length<4){
-                         return "La longueur de votre nom doit être supérieur à 4";
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  // Email textfield
-                  _buildTextField(
-                    controller: emailController,
-                    hintText: "Email",
-                    obscureText: false,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Veuillez saisir votre adresse e-mail';
-                      
-                      } else if (!value.endsWith('@gmail.com')) {
-                        return 'Veuillez saisir une adresse  Gmail';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  // Password textfield
-                  _buildTextField(
-                    controller: passwordController,
-                    hintText: "Mot de passe",
-                    obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Veuillez saisir votre mot de passe';
-                      } 
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  // Confirm password textfield
-                  _buildTextField(
-                    controller: confirmPasswordController,
-                    hintText: "last name",
-                    obscureText: false,
-                  
-                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Veuillez saisir votre prénom';
-                      }
-                      return null;
-                    },
+                const SizedBox(height: 20),
 
+                // Username
+                TextFormField(
+                  controller: usernameController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Requit';
+                    if (value.length < 4) return 'Min 4 caractères';
+                    return null;
+                  },
+                  decoration: const InputDecoration(
+                    labelText: "Nom d'utilisateur",
+                    prefixIcon: Icon(Icons.person_outline),
                   ),
-                  const SizedBox(height: 10),
-                  // Dropdown pour le niveau
-                  _buildTextField(
-                    controller: selectedniveauController,
-                    hintText: "Niveau",
+                ),
+                const SizedBox(height: 16),
 
-
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Veuillez sélectionner votre niveau';
-                      }
-                      return null;
-                    },
+                // Email
+                TextFormField(
+                  controller: emailController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Requit';
+                    if (!GetUtils.isEmail(value)) return 'Email invalide';
+                    return null;
+                  },
+                  decoration: const InputDecoration(
+                    labelText: "Email",
+                    prefixIcon: Icon(Icons.email_outlined),
                   ),
+                ),
+                const SizedBox(height: 16),
 
-                  // Sign up button
-                  const SizedBox(height: 25),
-                  // Sign up button
-                  ElevatedButton(
-                    onPressed:(){
+                // Password
+                TextFormField(
+                  controller: passwordController,
+                  obscureText: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Requit';
+                    if (value.length < 6) return 'Min 6 caractères';
+                    return null;
+                  },
+                  decoration: const InputDecoration(
+                    labelText: "Mot de passe",
+                    prefixIcon: Icon(Icons.lock_outline),
+                  ),
+                ),
+                const SizedBox(height: 16),
 
-                      signUserUp();
-                    },
-                    child: Text("S'inscrire"),
+                // Confirm Password (used as 'last name' or 'first name' in old controller?? - reusing standard field)
+                // The old controller parameters were: email, lastname, name, password, niveau
+                // In the old UI:
+                // usernameController -> "Nom d'utilisateur"
+                // confirmPasswordController -> "Last Name" (Hint says "last name", validator "prénom") - this is confusing in old code.
+                // Let's assume confirmPasswordController is meant to be Name or generic. I'll relabel it "Prénom / Nom"
+                TextFormField(
+                  controller: confirmPasswordController,
+                  validator: (val) => val!.isEmpty ? 'Requit' : null,
+                  decoration: const InputDecoration(
+                    labelText: "Prénom / Nom",
+                    prefixIcon: Icon(Icons.badge_outlined),
                   ),
-                  const SizedBox(height: 30),
-                  // Already a member? Login
-                  GestureDetector(
-                    onTap: () {
-                      // Navigation vers l'écran de connexion
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => LoginScreen()),
-                      );
-                    },
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("Déjà membre ?"),
-                        SizedBox(width: 4),
-                        Text(
-                          "Connectez-vous",
-                          style: TextStyle(
-                            color: Colors.blue,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
+                ),
+                const SizedBox(height: 16),
+
+                // Niveau
+                TextFormField(
+                  controller: niveauController,
+                  validator: (val) => val!.isEmpty ? 'Requit' : null,
+                  decoration: const InputDecoration(
+                    labelText: "Niveau",
+                    prefixIcon: Icon(Icons.school_outlined),
                   ),
-                ],
-              ),
+                ),
+
+                const SizedBox(height: 32),
+
+                SizedBox(
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: _handleSignup,
+                    child: const Text("S'INSCRIRE"),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("Déjà membre?"),
+                    TextButton(
+                      onPressed: () => Get.back(), // Go back to login
+                      child: const Text(
+                        "Connectez-vous",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    )
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
             ),
           ),
         ),
       ),
     );
   }
-
-  // Fonction pour construire les champs de texte
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hintText,
-    bool obscureText = false,
-    bool readOnly = false,
-    GestureTapCallback? onTap,
-    String? Function(String?)? validator,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: TextFormField(
-        controller: controller,
-        obscureText: obscureText,
-        readOnly: readOnly,
-        onTap: onTap,
-        validator: validator,
-        decoration: InputDecoration(
-          hintText: hintText,
-          labelText: hintText,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Fonction pour afficher le menu déroulant du niveau
 }
-
-

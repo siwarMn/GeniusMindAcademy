@@ -1,7 +1,7 @@
 import 'package:codajoy/screens/components/splash_screen.dart';
+import 'package:codajoy/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,21 +15,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'GenuisMind Academy',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-
-      ),
-
-      home: const Splash_Animated()
-
-    );
+        debugShowCheckedModeBanner: false,
+        title: 'GenuisMind Academy',
+        theme: AppTheme.lightTheme,
+        home: const Splash_Animated());
   }
 }
-
-
-
-
-
-

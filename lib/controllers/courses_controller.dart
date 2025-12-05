@@ -1,8 +1,9 @@
 import 'dart:typed_data';
 
 import 'package:codajoy/controllers/login_controller.dart';
+import 'package:codajoy/services/courses_service.dart';
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
+
 import 'package:get/get.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
@@ -13,7 +14,7 @@ class PdfViewer extends StatefulWidget {
 
 class _PdfViewerState extends State<PdfViewer> {
   Uint8List? pdfBytes;
-  final Dio _dio = Dio();
+
   late LoginController login;
 
   @override
@@ -23,25 +24,15 @@ class _PdfViewerState extends State<PdfViewer> {
     _fetchPdf();
   }
 
+  CoursesService coursesService = MockCoursesService();
+
   Future<void> _fetchPdf() async {
-    String? authtoken = await login.gettoken();
     try {
-      final response = await _dio.get(
-        'http://localhost:8000/api/v1/auth/File/GETALL',
-        options: Options(headers: {'Authorization': 'Bearer $authtoken'}),
-      );
-      print(response.statusCode);
-      if (response.statusCode == 200) {
-        setState(() {
-          pdfBytes = response.data;
-          print(pdfBytes);
-        });
-      } else {
-        print(pdfBytes);
-        throw Exception('Failed to load PDF: ${response.statusMessage}');
-      }
+      final bytes = await coursesService.getPdfFile();
+      setState(() {
+        pdfBytes = bytes;
+      });
     } catch (error) {
-      print(pdfBytes);
       print('Error fetching PDF: $error');
     }
   }
