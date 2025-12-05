@@ -9,10 +9,11 @@ class ProfileController extends GetxController {
   Future<void> updateProfile(String name, String email) async {
     try {
       // Assuming you have the user's token stored somewhere
-      String? token = await getToken(); // Implement this method to get the token
+      String? token =
+          await getToken(); // Implement this method to get the token
 
       if (token != null) {
-        String apiUrl = 'http://192.168.1.17:8080/api/v1/auth/profile';
+        String apiUrl = 'http://localhost:8080/api/v1/auth/profile';
 
         final response = await http.put(
           Uri.parse(apiUrl),
@@ -27,8 +28,8 @@ class ProfileController extends GetxController {
         );
 
         if (response.statusCode == 200) {
-        ;
-          Get.snackbar("Bravo !","Profil mis à jour avec succès");
+          ;
+          Get.snackbar("Bravo !", "Profil mis à jour avec succès");
           Get.to(ProfileScreen());
         } else {
           // Handle other status codes

@@ -18,7 +18,7 @@ class LoginController extends GetxController {
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.17:8080/api/v1/auth/authenticate'),
+        Uri.parse('http://localhost:8080/api/v1/auth/authenticate'),
         headers: headers,
         body: jsonEncode(body),
       );
@@ -31,8 +31,8 @@ class LoginController extends GetxController {
       if (response.statusCode == 200) {
         Map<String, dynamic> responseBody = jsonDecode(response.body);
         String? authtoken = responseBody["token"];
- Map<String, dynamic> decodedToken = JwtDecoder.decode(authtoken!);
-        String emailfromtoken=decodedToken["sub"];
+        Map<String, dynamic> decodedToken = JwtDecoder.decode(authtoken!);
+        String emailfromtoken = decodedToken["sub"];
         storeuseremail(email);
 
         print(decodedToken);

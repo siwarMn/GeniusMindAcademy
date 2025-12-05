@@ -4,8 +4,6 @@ import 'package:codajoy/controllers/login_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class PdfViewer extends StatefulWidget {
@@ -29,7 +27,7 @@ class _PdfViewerState extends State<PdfViewer> {
     String? authtoken = await login.gettoken();
     try {
       final response = await _dio.get(
-        'http://192.168.1.17:8000/api/v1/auth/File/GETALL',
+        'http://localhost:8000/api/v1/auth/File/GETALL',
         options: Options(headers: {'Authorization': 'Bearer $authtoken'}),
       );
       print(response.statusCode);
