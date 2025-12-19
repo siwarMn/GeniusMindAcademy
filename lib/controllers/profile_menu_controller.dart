@@ -3,6 +3,7 @@ import 'package:codajoy/controllers/quiz_controller.dart';
 import 'package:codajoy/screens/components/chatbot.dart';
 import 'package:codajoy/screens/reclamation/reclamation_list_screen.dart';
 import 'package:codajoy/screens/test_screen.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -28,10 +29,16 @@ class ProfileMenuController extends GetxController {
   var filteredItems = <DashboardItem>[].obs;
 
   final TextEditingController searchController = TextEditingController();
+  
+  // User Details
+  var userName = "".obs;
+  var userImage = "".obs;
+  final _storage = const FlutterSecureStorage();
 
   @override
   void onInit() {
     super.onInit();
+    _loadUserData();
     _initializeItems();
     filteredItems.assignAll(_allItems);
 
@@ -39,6 +46,22 @@ class ProfileMenuController extends GetxController {
     searchController.addListener(() {
       filter(searchController.text);
     });
+  }
+
+  Future<void> _loadUserData() async {
+    String? nom = await _storage.read(key: "nom");
+    String? prenom = await _storage.read(key: "prenom");
+    String? image = await _storage.read(key: "image");
+    
+    if (nom != null || prenom != null) {
+      userName.value = "${prenom ?? ''} ${nom ?? ''}".trim();
+    } else {
+      userName.value = "Utilisateur";
+    }
+    
+    if (image != null) {
+      userImage.value = image;
+    }
   }
 
   void _initializeItems() {

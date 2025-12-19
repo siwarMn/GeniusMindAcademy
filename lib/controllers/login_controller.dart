@@ -1,41 +1,52 @@
+import 'package:codajoy/models/auth_models.dart';
 import 'package:codajoy/screens/components/profile_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 
 import 'package:codajoy/services/auth_service.dart';
+import 'package:codajoy/screens/login_screen.dart';
 
 class LoginController extends GetxController {
-  AuthService authService = MockAuthService();
+  AuthService authService = AuthService();
 
   Future<bool> signin(String email, String password, String niveau) async {
     try {
-      final result = await authService.login(email, password);
+      final request = AuthenticationRequest(email: email, password: password);
+      final result = await authService.authenticate(request);
 
-      if (result['success'] == true) {
-        String authtoken = result['token'];
-        storeuseremail(email);
+      if (result.token != null) {
+        String authtoken = result.token!;
         await storetoken(authtoken);
-
-        // Mocking token decoding slightly since we don't have a real JWT
-        // Or we just skip the decoding part for mock
-        // Map<String, dynamic> decodedToken = JwtDecoder.decode(authtoken!);
-        // String emailfromtoken = decodedToken["sub"];
+        
+        // Store user details
+        if (result.nom != null) await _storage.write(key: "nom", value: result.nom);
+        if (result.prenom != null) await _storage.write(key: "prenom", value: result.prenom);
+        if (result.role != null) await _storage.write(key: "role", value: result.role);
+        if (result.image != null) await _storage.write(key: "image", value: result.image);
+        if (result.niveau != null) await _storage.write(key: "niveau", value: result.niveau);
+        await storeuseremail(email);
 
         Get.to(ProfileScreen());
         return true;
       } else {
-        if (kDebugMode) {
-          print(result['message']);
-        }
+        Get.snackbar("Error", "No token received");
         return false;
       }
     } catch (e) {
       if (kDebugMode) {
         print('Exception: $e');
       }
+      Get.snackbar("Error", "Login failed: ${e.toString()}");
       return false;
     }
+  }
+
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+
+  Future<void> logout() async {
+    await _storage.deleteAll();
+    Get.offAll(() => LoginScreen()); // Navigate to login and remove all previous routes
   }
 
   Future<void> storetoken(String? token) async {

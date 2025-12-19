@@ -1,8 +1,11 @@
+import 'dart:io';
 import 'package:codajoy/controllers/register_controller.dart';
 import 'package:codajoy/screens/login_screen.dart';
 import 'package:codajoy/theme/app_theme.dart';
+import 'package:flutter/foundation.dart'; // for kIsWeb
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({Key? key}) : super(key: key);
@@ -13,26 +16,47 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen> {
   final RegisterController registerController = Get.put(RegisterController());
+  
+  XFile? _image;
+  final ImagePicker _picker = ImagePicker();
 
   // Controllers
-  final usernameController = TextEditingController();
+  final firstnameController = TextEditingController();
+  final lastnameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  final confirmPasswordController = TextEditingController();
   final niveauController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
 
+  Future<void> _pickImage() async {
+    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _image = pickedFile;
+      });
+    }
+  }
+
   void _handleSignup() {
     if (_formKey.currentState!.validate()) {
       registerController.register(
+        _image,
         emailController.text,
-        usernameController.text,
-        confirmPasswordController
-            .text, // Assuming this maps to name/lastname as per controller
+        lastnameController.text, 
+        firstnameController.text, 
         passwordController.text,
         niveauController.text,
       );
+    }
+  }
+
+  ImageProvider? _getImageProvider() {
+    if (_image == null) return null;
+    if (kIsWeb) {
+      return NetworkImage(_image!.path); // Blob URL on web
+    } else {
+      return FileImage(File(_image!.path)); // File path on mobile
     }
   }
 
@@ -70,22 +94,46 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 const SizedBox(height: 30),
 
-                // Image (Optional, keeping consistent with old design if wanted, or smaller)
-                // SizedBox(height: 100, child: Image.asset('assets/images/logoo.png')),
+                // Image Picker
+                Center(
+                  child: GestureDetector(
+                    onTap: _pickImage,
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundColor: Colors.grey[200],
+                      backgroundImage: _getImageProvider(),
+                      child: _image == null
+                          ? const Icon(Icons.camera_alt, size: 40, color: Colors.grey)
+                          : null,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Center(child: Text("Ajouter une photo de profil", style: TextStyle(color: Colors.grey))),
 
                 const SizedBox(height: 20),
 
-                // Username
+                // Firstname (Prénom)
                 TextFormField(
-                  controller: usernameController,
+                  controller: firstnameController,
                   validator: (value) {
                     if (value == null || value.isEmpty) return 'Requit';
-                    if (value.length < 4) return 'Min 4 caractères';
                     return null;
                   },
                   decoration: const InputDecoration(
-                    labelText: "Nom d'utilisateur",
+                    labelText: "Prénom",
                     prefixIcon: Icon(Icons.person_outline),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Lastname (Nom)
+                TextFormField(
+                  controller: lastnameController,
+                  validator: (val) => val!.isEmpty ? 'Requit' : null,
+                  decoration: const InputDecoration(
+                    labelText: "Nom",
+                    prefixIcon: Icon(Icons.badge_outlined),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -117,22 +165,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   decoration: const InputDecoration(
                     labelText: "Mot de passe",
                     prefixIcon: Icon(Icons.lock_outline),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Confirm Password (used as 'last name' or 'first name' in old controller?? - reusing standard field)
-                // The old controller parameters were: email, lastname, name, password, niveau
-                // In the old UI:
-                // usernameController -> "Nom d'utilisateur"
-                // confirmPasswordController -> "Last Name" (Hint says "last name", validator "prénom") - this is confusing in old code.
-                // Let's assume confirmPasswordController is meant to be Name or generic. I'll relabel it "Prénom / Nom"
-                TextFormField(
-                  controller: confirmPasswordController,
-                  validator: (val) => val!.isEmpty ? 'Requit' : null,
-                  decoration: const InputDecoration(
-                    labelText: "Prénom / Nom",
-                    prefixIcon: Icon(Icons.badge_outlined),
                   ),
                 ),
                 const SizedBox(height: 16),

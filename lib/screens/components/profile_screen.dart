@@ -1,6 +1,8 @@
 import 'package:codajoy/controllers/profile_menu_controller.dart';
+import 'package:codajoy/controllers/login_controller.dart';
 import 'package:codajoy/screens/components/ModifierProfile.dart';
 import 'package:codajoy/screens/login_screen.dart';
+import 'package:codajoy/utils/image_utils.dart'; // Import utils
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -38,8 +40,43 @@ class ProfileScreen extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(20),
             child: Column(
-              //   crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // User Header
+                Obx(() => Container(
+                  margin: EdgeInsets.only(bottom: 20),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 30,
+                        backgroundColor: Colors.white,
+                        backgroundImage: controller.userImage.value.isNotEmpty
+                            ? MemoryImage(ImageUtils.decodeImage(controller.userImage.value)!)
+                            : null, 
+                        child: controller.userImage.value.isEmpty || ImageUtils.decodeImage(controller.userImage.value) == null
+                            ? Icon(Icons.person, size: 30)
+                            : null,
+                      ),
+                      SizedBox(width: 15),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Bonjour,",
+                            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                          ),
+                          Text(
+                            controller.userName.value,
+                            style: TextStyle(
+                              fontSize: 18, 
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                )),
                 Container(
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.blue),
@@ -108,10 +145,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             GestureDetector(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ModifierProfilPage()),
-                );
+                Get.to(() => ModifierProfilPage());
               },
               child: Column(
                 children: [
@@ -155,7 +189,8 @@ class ProfileScreen extends StatelessWidget {
             TextButton(
               child: Text('Logout'),
               onPressed: () {
-                Get.to(LoginScreen());
+                final LoginController login = Get.find<LoginController>();
+                login.logout();
               },
             ),
           ],
