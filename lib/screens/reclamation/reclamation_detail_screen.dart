@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class ReclamationDetailScreen extends StatelessWidget {
-  final Reclamation reclamation;
+  final ReclamationResponse reclamation;
   final ReclamationController controller = Get.find();
   final TextEditingController commentController = TextEditingController();
 
@@ -49,8 +49,10 @@ class ReclamationDetailScreen extends StatelessWidget {
                             children: [
                               _buildStatusChip(reclamation.status),
                               Text(
-                                DateFormat('dd MMM yyyy, HH:mm')
-                                    .format(reclamation.createdAt),
+                                reclamation.createdAt != null
+                                    ? DateFormat('dd MMM yyyy, HH:mm')
+                                        .format(reclamation.createdAt!)
+                                    : '',
                                 style: TextStyle(
                                     color: Colors.grey[500], fontSize: 12),
                               ),
@@ -58,7 +60,7 @@ class ReclamationDetailScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            reclamation.title,
+                            reclamation.titre,
                             style: const TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold),
                           ),
@@ -73,7 +75,7 @@ class ReclamationDetailScreen extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text("Catégorie: ${reclamation.category}",
+                              Text("Catégorie: ${reclamation.categorie}",
                                   style: TextStyle(color: Colors.grey[600])),
                               TextButton.icon(
                                 onPressed: () => _showUpdateDialog(context),
@@ -193,7 +195,7 @@ class ReclamationDetailScreen extends StatelessWidget {
                     onPressed: () {
                       if (commentController.text.trim().isNotEmpty) {
                         controller.addComment(
-                            reclamation.id, commentController.text.trim());
+                            reclamation.id!, commentController.text.trim());
                         commentController.clear();
                         FocusScope.of(context).unfocus();
                       }
@@ -249,19 +251,19 @@ class ReclamationDetailScreen extends StatelessWidget {
         children: [
           _statusOption("Open", (val) {
             Get.back();
-            controller.updateStatus(reclamation.id, val);
+            controller.updateStatus(reclamation.id!, val);
           }),
           _statusOption("In Progress", (val) {
             Get.back();
-            controller.updateStatus(reclamation.id, val);
+            controller.updateStatus(reclamation.id!, val);
           }),
           _statusOption("Resolved", (val) {
             Get.back();
-            controller.updateStatus(reclamation.id, val);
+            controller.updateStatus(reclamation.id!, val);
           }),
           _statusOption("Closed", (val) {
             Get.back();
-            controller.updateStatus(reclamation.id, val);
+            controller.updateStatus(reclamation.id!, val);
           }),
         ],
       ),

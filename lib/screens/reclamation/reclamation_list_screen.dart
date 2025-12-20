@@ -17,8 +17,8 @@ class ReclamationListScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Réclamations"),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppTheme.primaryColor),
+        leading: BackButton(
+          color: Colors.black,
           onPressed: () => Get.back(),
         ),
       ),
@@ -91,7 +91,7 @@ class ReclamationListScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTicketCard(BuildContext context, Reclamation ticket) {
+  Widget _buildTicketCard(BuildContext context, ReclamationResponse ticket) {
     Color statusColor;
     switch (ticket.status.toLowerCase()) {
       case 'resolved':
@@ -132,14 +132,16 @@ class ReclamationListScreen extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  DateFormat('dd MMM yyyy').format(ticket.createdAt),
+                  ticket.createdAt != null
+                      ? DateFormat('dd MMM yyyy').format(ticket.createdAt!)
+                      : '',
                   style: TextStyle(color: Colors.grey[500], fontSize: 12),
                 ),
               ],
             ),
             const SizedBox(height: 12),
             Text(
-              ticket.title,
+              ticket.titre,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 8),
@@ -159,7 +161,7 @@ class ReclamationListScreen extends StatelessWidget {
                         size: 16, color: Colors.grey[500]),
                     const SizedBox(width: 4),
                     Text(
-                      ticket.category,
+                      ticket.categorie,
                       style: TextStyle(color: Colors.grey[500], fontSize: 12),
                     )
                   ],
@@ -172,7 +174,7 @@ class ReclamationListScreen extends StatelessWidget {
                     ),
                     IconButton(
                       icon: Icon(Icons.delete, size: 20, color: Colors.red),
-                      onPressed: () => _confirmDelete(context, ticket.id),
+                      onPressed: () => _confirmDelete(context, ticket.id!),
                     ),
                   ],
                 )
@@ -184,7 +186,7 @@ class ReclamationListScreen extends StatelessWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context, String id) {
+  void _confirmDelete(BuildContext context, int id) {
     Get.defaultDialog(
         title: "Supprimer?",
         middleText: "Voulez-vous vraiment supprimer cette réclamation?",
@@ -197,26 +199,26 @@ class ReclamationListScreen extends StatelessWidget {
         });
   }
 
-  void _showUpdateDialog(BuildContext context, dynamic reclamation) {
+  void _showUpdateDialog(BuildContext context, ReclamationResponse reclamation) {
     Get.defaultDialog(
       title: "Mettre à jour le statut",
       content: Column(
         children: [
           _statusOption("Open", (val) {
             Get.back();
-            controller.updateStatus(reclamation.id, val);
+            controller.updateStatus(reclamation.id!, val);
           }),
           _statusOption("In Progress", (val) {
             Get.back();
-            controller.updateStatus(reclamation.id, val);
+            controller.updateStatus(reclamation.id!, val);
           }),
           _statusOption("Resolved", (val) {
             Get.back();
-            controller.updateStatus(reclamation.id, val);
+            controller.updateStatus(reclamation.id!, val);
           }),
           _statusOption("Closed", (val) {
             Get.back();
-            controller.updateStatus(reclamation.id, val);
+            controller.updateStatus(reclamation.id!, val);
           }),
         ],
       ),

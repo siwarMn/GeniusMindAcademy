@@ -4,15 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class ReclamationController extends GetxController {
-  final ReclamationService _service = MockReclamationService();
+  final ReclamationService _service = ReclamationService();
 
   var isLoading = false.obs;
 
-  // All items
-  var reclamationList = <Reclamation>[].obs;
-
-  // Filtered items for display
-  var filteredList = <Reclamation>[].obs;
+  var reclamationList = <ReclamationResponse>[].obs;
+  var filteredList = <ReclamationResponse>[].obs;
 
   final TextEditingController searchController = TextEditingController();
 
@@ -21,7 +18,6 @@ class ReclamationController extends GetxController {
     super.onInit();
     fetchReclamations();
 
-    // Listen to search changes
     searchController.addListener(() {
       filter(searchController.text);
     });
@@ -33,9 +29,9 @@ class ReclamationController extends GetxController {
     } else {
       var lowerQuery = query.toLowerCase();
       var results = reclamationList.where((item) {
-        return item.title.toLowerCase().contains(lowerQuery) ||
+        return item.titre.toLowerCase().contains(lowerQuery) ||
             item.status.toLowerCase().contains(lowerQuery) ||
-            item.category.toLowerCase().contains(lowerQuery);
+            item.categorie.toLowerCase().contains(lowerQuery);
       }).toList();
       filteredList.assignAll(results);
     }
@@ -46,64 +42,68 @@ class ReclamationController extends GetxController {
       isLoading(true);
       var fetched = await _service.getReclamations();
       reclamationList.assignAll(fetched);
-      filter(searchController.text); // Re-apply filter if any
+      filter(searchController.text);
+    } catch (e) {
+      _showSafeSnackbar("Error", "Failed to load reclamations: $e",
+          backgroundColor: Colors.red);
     } finally {
       isLoading(false);
     }
   }
 
   Future<bool> addReclamation(
-      String title, String description, String category) async {
+      String titre, String description, String categorie) async {
     try {
       isLoading(true);
-      bool success =
-          await _service.createReclamation(title, description, category);
-      if (success) {
-        await fetchReclamations(); // Refresh list
-        return true;
-      }
+      await _service.createReclamation(titre, description, categorie, "User");
+      await fetchReclamations();
+      return true;
+    } catch (e) {
+      _showSafeSnackbar("Error", "Failed to create reclamation: $e",
+          backgroundColor: Colors.red);
       return false;
     } finally {
       isLoading(false);
     }
   }
 
-  Future<void> updateStatus(String id, String newStatus) async {
+  Future<void> updateStatus(int id, String newStatus) async {
     try {
       isLoading(true);
-      var success = await _service.updateReclamation(id, newStatus);
-      if (success) {
-        await fetchReclamations();
-        Get.snackbar("Success", "Status updated successfully",
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green.withOpacity(0.1));
-      }
+      await _service.updateStatus(id, newStatus);
+      await fetchReclamations();
+      _showSafeSnackbar("Success", "Status updated successfully",
+          backgroundColor: Colors.green);
+    } catch (e) {
+      _showSafeSnackbar("Error", "Failed to update status: $e",
+          backgroundColor: Colors.red);
     } finally {
       isLoading(false);
     }
   }
 
-  Future<void> deleteReclamation(String id) async {
+  Future<void> deleteReclamation(int id) async {
     try {
       isLoading(true);
-      var success = await _service.deleteReclamation(id);
-      if (success) {
-        await fetchReclamations();
-        Get.snackbar("Deleted", "Ticket removed",
-            snackPosition: SnackPosition.BOTTOM);
-      }
+      await _service.deleteReclamation(id);
+      await fetchReclamations();
+      _showSafeSnackbar("Deleted", "Ticket removed");
+    } catch (e) {
+      _showSafeSnackbar("Error", "Failed to delete reclamation: $e",
+          backgroundColor: Colors.red);
     } finally {
       isLoading(false);
     }
   }
 
-  Future<void> addComment(String id, String text) async {
+  Future<void> addComment(int id, String text) async {
     try {
       isLoading(true);
-      var success = await _service.addComment(id, text);
-      if (success) {
-        await fetchReclamations();
-      }
+      await _service.addComment(id, "User", text);
+      await fetchReclamations();
+    } catch (e) {
+      _showSafeSnackbar("Error", "Failed to add comment: $e",
+          backgroundColor: Colors.red);
     } finally {
       isLoading(false);
     }
@@ -113,5 +113,18 @@ class ReclamationController extends GetxController {
   void onClose() {
     searchController.dispose();
     super.onClose();
+  }
+
+  void _showSafeSnackbar(String title, String message,
+      {Color? backgroundColor}) {
+    if (Get.context != null) {
+      ScaffoldMessenger.of(Get.context!).showSnackBar(
+        SnackBar(
+          content: Text("$title: $message"),
+          backgroundColor: backgroundColor ?? Colors.grey[800],
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 }
