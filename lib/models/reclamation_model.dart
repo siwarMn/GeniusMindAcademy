@@ -30,6 +30,9 @@ class ReclamationResponse {
   final String description;
   final String creerpar;
   final String status;
+  final String? priority;
+  final String? assignedTo;
+  final int? rating;
   final DateTime? createdAt;
   final List<CommentResponse> comments;
 
@@ -40,6 +43,9 @@ class ReclamationResponse {
     required this.description,
     required this.creerpar,
     required this.status,
+    this.priority,
+    this.assignedTo,
+    this.rating,
     this.createdAt,
     this.comments = const [],
   });
@@ -59,6 +65,9 @@ class ReclamationResponse {
       description: json['description'] ?? '',
       creerpar: json['creerpar'] ?? '',
       status: json['status'] ?? 'Open',
+      priority: json['priority'],
+      assignedTo: json['assignedTo'],
+      rating: json['rating'],
       createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
       comments: commentsList,
     );
@@ -71,12 +80,14 @@ class ReclamationRequest {
   final String categorie;
   final String description;
   final String creerpar;
+  final String? priority;
 
   ReclamationRequest({
     required this.titre,
     required this.categorie,
     required this.description,
     required this.creerpar,
+    this.priority,
   });
 
   Map<String, dynamic> toJson() {
@@ -85,6 +96,7 @@ class ReclamationRequest {
       'categorie': categorie,
       'description': description,
       'creerpar': creerpar,
+      'priority': priority,
     };
   }
 }
@@ -118,6 +130,36 @@ class StatusUpdateRequest {
   Map<String, dynamic> toJson() {
     return {
       'status': status,
+    };
+  }
+}
+
+// Rating Request DTO
+class RatingRequest {
+  final int rating;
+
+  RatingRequest({
+    required this.rating,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'rating': rating,
+    };
+  }
+}
+
+// Assignment Request DTO
+class AssignmentRequest {
+  final String assignedTo;
+
+  AssignmentRequest({
+    required this.assignedTo,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'assignedTo': assignedTo,
     };
   }
 }

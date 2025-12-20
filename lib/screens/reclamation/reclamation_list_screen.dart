@@ -2,6 +2,7 @@ import 'package:codajoy/controllers/reclamation_controller.dart';
 import 'package:codajoy/models/reclamation_model.dart';
 import 'package:codajoy/screens/reclamation/create_reclamation_screen.dart';
 import 'package:codajoy/screens/reclamation/reclamation_detail_screen.dart';
+import 'package:codajoy/screens/reclamation/widgets/filter_bottom_sheet.dart';
 import 'package:codajoy/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -17,10 +18,15 @@ class ReclamationListScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Réclamations"),
-        leading: BackButton(
-          color: Colors.black,
-          onPressed: () => Get.back(),
-        ),
+        iconTheme: IconThemeData(color: Colors.black),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            onPressed: () {
+              Get.bottomSheet(FilterBottomSheet());
+            },
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Get.to(() => CreateReclamationScreen()),
