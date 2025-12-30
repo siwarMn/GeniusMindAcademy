@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart'; // Ajouter cet import
+
 class QuizQuestion {
   final int id;
   final String question;
@@ -21,16 +23,6 @@ class QuizQuestion {
       correctAnswer: json['correctAnswer'] ?? '',
       explanation: json['explanation'],
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'question': question,
-      'options': options,
-      'correctAnswer': correctAnswer,
-      'explanation': explanation,
-    };
   }
 }
 
@@ -58,6 +50,37 @@ class Quiz {
     this.isActive = true,
     this.description,
   });
+
+  // Méthode utilitaire pour obtenir le niveau en texte
+  String get levelText {
+    switch (levelId) {
+      case 1:
+        return 'Facile';
+      case 2:
+        return 'Moyen';
+      case 3:
+        return 'Difficile';
+      default:
+        return 'Non spécifié';
+    }
+  }
+
+  // Méthode utilitaire pour obtenir la couleur du niveau
+  Color get levelColor {
+    switch (levelId) {
+      case 1:
+        return Colors.green;
+      case 2:
+        return Colors.orange;
+      case 3:
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  // Nombre de questions
+  int get questionCount => questions.length;
 
   factory Quiz.fromJson(Map<String, dynamic> json) {
     return Quiz(

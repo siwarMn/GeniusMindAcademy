@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:codajoy/controllers/login_controller.dart';
 import 'package:codajoy/services/quiz_service.dart';
 import 'package:codajoy/models/quiz_model.dart';
-import 'package:codajoy/screens/quiz/quiz_detail_screen.dart';
+import 'quiz_detail_screen.dart';
 
 class QuizListScreen extends StatefulWidget {
   @override
@@ -12,14 +12,18 @@ class QuizListScreen extends StatefulWidget {
 
 class _QuizListScreenState extends State<QuizListScreen> {
   late Future<List<Quiz>> _futureQuizzes;
-  LoginController login = Get.put(LoginController());
+  //final QuizService quizService = MockQuizService(); // Correction ici
 
-  // Crée une instance de MockQuizService
-  final QuizService quizService = MockQuizService();
+  final QuizService quizService = ApiQuizService();
 
-  Future<List<Quiz>> getAllQuizzes() async {
+  @override
+  void initState() {
+    super.initState();
+    _futureQuizzes = _getAllQuizzes();
+  }
+
+  Future<List<Quiz>> _getAllQuizzes() async {
     try {
-      // Utilise le service pour récupérer les données
       return await quizService.getAllQuizzes();
     } catch (e) {
       print('Erreur lors du chargement: $e');
@@ -27,15 +31,9 @@ class _QuizListScreenState extends State<QuizListScreen> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _futureQuizzes = getAllQuizzes();
-  }
-
   Future<void> _refreshQuizzes() async {
     setState(() {
-      _futureQuizzes = getAllQuizzes();
+      _futureQuizzes = _getAllQuizzes();
     });
   }
 
@@ -46,9 +44,9 @@ class _QuizListScreenState extends State<QuizListScreen> {
         title: Text(
           'Liste des Quiz',
           style: TextStyle(fontWeight: FontWeight.bold),
+          selectionColor: Colors.white,
         ),
         backgroundColor: Colors.blue[800],
-        // bouton refresh
         actions: [
           IconButton(
             icon: Icon(Icons.refresh, color: Colors.white),
@@ -62,7 +60,6 @@ class _QuizListScreenState extends State<QuizListScreen> {
         child: FutureBuilder<List<Quiz>>(
           future: _futureQuizzes,
           builder: (context, snapshot) {
-            // État de chargement
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(
                 child: Column(
@@ -79,7 +76,6 @@ class _QuizListScreenState extends State<QuizListScreen> {
               );
             }
 
-            // Erreur
             if (snapshot.hasError) {
               return Center(
                 child: Column(
@@ -122,10 +118,8 @@ class _QuizListScreenState extends State<QuizListScreen> {
               );
             }
 
-            // Données disponibles
             if (snapshot.hasData && snapshot.data!.isNotEmpty) {
               final quizzes = snapshot.data!;
-
               return RefreshIndicator(
                 onRefresh: _refreshQuizzes,
                 color: Colors.blue,
@@ -133,15 +127,23 @@ class _QuizListScreenState extends State<QuizListScreen> {
                   itemCount: quizzes.length,
                   padding: EdgeInsets.all(16),
                   itemBuilder: (context, index) {
-                    final quiz = quizzes[index];
-
-                    return _buildQuizCard(quiz, context);
+                    return QuizCard(
+                      quiz: quizzes[index],
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                QuizDetailScreen(quiz: quizzes[index]),
+                          ),
+                        );
+                      },
+                    );
                   },
                 ),
               );
             }
 
-            // Aucune donnée
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -160,64 +162,29 @@ class _QuizListScreenState extends State<QuizListScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Commencez par créer votre premier quiz',
-                    style: TextStyle(color: Colors.grey[500]),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 30),
-                  ElevatedButton(
-                    onPressed: () {
-                      // TODO: Ajouter création de quiz
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Création de quiz à implémenter'),
-                          backgroundColor: Colors.blue,
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                    ),
-                    child: Text(
-                      'Créer un quiz',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             );
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Ajouter un nouveau quiz'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        },
-        backgroundColor: Colors.green,
-        child: Icon(Icons.add, color: Colors.white),
-        tooltip: 'Nouveau quiz',
-      ),
     );
   }
+}
 
-  // Widget pour construire une carte de quiz
-  Widget _buildQuizCard(Quiz quiz, BuildContext context) {
+// Widget QuizCard réutilisable
+class QuizCard extends StatelessWidget {
+  final Quiz quiz;
+  final VoidCallback onTap;
+
+  const QuizCard({
+    Key? key,
+    required this.quiz,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
       margin: EdgeInsets.only(bottom: 16),
       elevation: 3,
@@ -225,17 +192,13 @@ class _QuizListScreenState extends State<QuizListScreen> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
-        onTap: () {
-          // Action quand on clique sur le quiz
-          _showQuizDetails(context, quiz);
-        },
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Ligne 1: Titre et statut
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -247,18 +210,15 @@ class _QuizListScreenState extends State<QuizListScreen> {
                         fontWeight: FontWeight.bold,
                         color: Colors.blue[900],
                       ),
-                      overflow: TextOverflow.ellipsis,
                       maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   SizedBox(width: 10),
                   _buildStatusIndicator(quiz.isActive ?? false),
                 ],
               ),
-
               SizedBox(height: 10),
-
-              // Ligne 2: Description
               if (quiz.description != null && quiz.description!.isNotEmpty)
                 Text(
                   quiz.description!,
@@ -270,10 +230,7 @@ class _QuizListScreenState extends State<QuizListScreen> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-
               SizedBox(height: 12),
-
-              // Ligne 3: Informations et bouton
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -282,14 +239,14 @@ class _QuizListScreenState extends State<QuizListScreen> {
                       Icon(
                         Icons.school,
                         size: 16,
-                        color: Colors.orange,
+                        color: quiz.levelColor,
                       ),
                       SizedBox(width: 5),
                       Text(
-                        'Niveau ${quiz.levelId ?? 1}',
+                        quiz.levelText,
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.orange[700],
+                          color: quiz.levelColor,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -301,7 +258,7 @@ class _QuizListScreenState extends State<QuizListScreen> {
                       ),
                       SizedBox(width: 5),
                       Text(
-                        '1 question',
+                        '${quiz.questions.length} question${quiz.questions.length > 1 ? 's' : ''}',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.purple[700],
@@ -309,8 +266,6 @@ class _QuizListScreenState extends State<QuizListScreen> {
                       ),
                     ],
                   ),
-
-                  // Bouton Voir
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
@@ -346,7 +301,6 @@ class _QuizListScreenState extends State<QuizListScreen> {
     );
   }
 
-  // Widget pour l'indicateur de statut
   Widget _buildStatusIndicator(bool isActive) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -382,142 +336,6 @@ class _QuizListScreenState extends State<QuizListScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  // Fonction pour afficher les détails du quiz
-  void _showQuizDetails(BuildContext context, Quiz quiz) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-              Text(
-                'Détails du Quiz',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue[900],
-                ),
-              ),
-              SizedBox(height: 15),
-              ListTile(
-                leading: Icon(Icons.title, color: Colors.blue),
-                title: Text('Titre'),
-                subtitle: Text(
-                  quiz.title ?? 'Non spécifié',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.description, color: Colors.green),
-                title: Text('Description'),
-                subtitle: Text(
-                  quiz.description ?? 'Aucune description',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.school, color: Colors.orange),
-                title: Text('Niveau'),
-                subtitle: Text(
-                  'Niveau ${quiz.levelId ?? 1}',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.circle,
-                    color: quiz.isActive == true ? Colors.green : Colors.red),
-                title: Text('Statut'),
-                subtitle: Text(
-                  quiz.isActive == true ? 'Actif' : 'Inactif',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    color: quiz.isActive == true ? Colors.green : Colors.red,
-                  ),
-                ),
-              ),
-              SizedBox(height: 25),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 15),
-                        side: BorderSide(color: Colors.blue),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: Text(
-                        'Fermer',
-                        style: TextStyle(color: Colors.blue),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 15),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context); // Ferme le modal
-                        // TODO: Navigation vers l'écran complet des détails
-                        // ScaffoldMessenger.of(context).showSnackBar(
-                        // SnackBar(
-                        // content: Text('Ouverture des détails complets'),
-                        // backgroundColor: Colors.blue,
-                        //),
-                        // );
-
-                        // Ouvre l'écran de détails complet
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => QuizDetailScreen(quiz: quiz),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        padding: EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: Text(
-                        'Ouvrir',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
-            ],
-          ),
-        );
-      },
     );
   }
 }
