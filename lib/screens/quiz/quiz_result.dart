@@ -82,7 +82,14 @@ class QuizResultScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final question = quiz.questions[index];
                 final userAnswer = userAnswers[index];
-                final isCorrect = userAnswer == question.correctAnswer;
+
+                // Trouver la bonne réponse
+                final correctOption = question.options.firstWhere(
+                  (opt) => opt.correct,
+                  orElse: () => question.options[0],
+                );
+
+                final isCorrect = userAnswer == correctOption.label;
 
                 return Card(
                   margin: EdgeInsets.only(bottom: 10),
@@ -105,7 +112,7 @@ class QuizResultScreen extends StatelessWidget {
                             SizedBox(width: 10),
                             Expanded(
                               child: Text(
-                                question.question,
+                                question.label,
                                 style: TextStyle(fontWeight: FontWeight.w500),
                               ),
                             ),
@@ -117,24 +124,12 @@ class QuizResultScreen extends StatelessWidget {
                           style: TextStyle(color: Colors.grey[700]),
                         ),
                         Text(
-                          'Bonne réponse: ${question.correctAnswer}',
+                          'Bonne réponse: ${correctOption.label}',
                           style: TextStyle(
                             color: Colors.green[800],
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        if (question.explanation != null)
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(height: 10),
-                              Text(
-                                'Explication:',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              Text(question.explanation!),
-                            ],
-                          ),
                       ],
                     ),
                   ),

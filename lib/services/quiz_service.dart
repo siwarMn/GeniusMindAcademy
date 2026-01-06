@@ -1,31 +1,153 @@
 import 'package:codajoy/models/quiz_model.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 abstract class QuizService {
-  Future<List<Quiz>> getAllQuizzes();
-  Future<Quiz> getQuizById(int id);
+  /*Future<List<Quiz>> getAllQuizzes();
+  Future<Quiz> getQuizById(int id);*/
+  Future<List<Quiz>> getStudentQuizzes(String studentId);
+  Future<Quiz> getQuizDetails(int quizId);
+  Future<void> startQuiz(String studentId, int quizId);
+  Future<List<QuizScore>> getStudentScores(String studentId);
+
+  Future<QuizScore> submitQuizScore({
+    required String studentId,
+    required int quizId,
+    required int score,
+    required int total,
+    required int durationSec,
+  });
+
+  Future<QuizScore> getQuizResult(String studentId, int quizId);
 }
 
 class ApiQuizService implements QuizService {
-  final String baseUrl = 'http://localhost:51942/api/quiz';
+  final _storage = const FlutterSecureStorage();
 
+  /* même règle que ReclamationService */
+  final String baseUrl = kIsWeb
+      ? 'http://localhost:8080/api/v1/auth/quiz'
+      : 'http://10.0.2.2:8080/api/v1/auth/quiz';
+
+  Future<Map<String, String>> _headers() async {
+    final token = await _storage.read(key: 'jwt_token');
+    if (token == null) throw Exception('No token found. Please login first.');
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+  }
+/*
+  @override
   Future<List<Quiz>> getAllQuizzes() async {
-    final response = await http.get(Uri.parse(baseUrl));
+    final response = await http.get(
+      Uri.parse(baseUrl),
+      headers: await _headers(),
+    );
+
     if (response.statusCode == 200) {
-      List<dynamic> body = jsonDecode(response.body);
+      final List<dynamic> body = jsonDecode(response.body);
       return body.map((e) => Quiz.fromJson(e)).toList();
+    }
+    throw Exception('Erreur chargement quiz : ${response.statusCode}');
+  }
+
+  @override
+  Future<Quiz> getQuizById(int id) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/$id'),
+      headers: await _headers(),
+    );
+
+    if (response.statusCode == 200) {
+      return Quiz.fromJson(jsonDecode(response.body));
+    }
+    throw Exception('Quiz non trouvé : ${response.statusCode}');
+  }*/
+
+  @override
+  Future<List<Quiz>> getStudentQuizzes(String studentId) async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/$studentId'),
+      headers: await _headers(),
+    );
+    final body = jsonDecode(res.body) as List;
+    return body.map((e) => Quiz.fromJson(e)).toList();
+  }
+
+  @override
+  Future<Quiz> getQuizDetails(int quizId) async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/details/$quizId'),
+      headers: await _headers(),
+    );
+    return Quiz.fromJson(jsonDecode(res.body));
+  }
+
+  @override
+  Future<void> startQuiz(String studentId, int quizId) async {
+    print("baseUrl " + baseUrl);
+    await http.post(
+      Uri.parse('$baseUrl/start'),
+      headers: await _headers(),
+      body: jsonEncode({'studentId': studentId, 'quizId': quizId}),
+    );
+  }
+
+  @override
+  Future<List<QuizScore>> getStudentScores(String studentId) async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/scores/$studentId'),
+      headers: await _headers(),
+    );
+    final body = jsonDecode(res.body) as List;
+    return body.map((e) => QuizScore.fromJson(e)).toList();
+  }
+
+  @override
+  Future<QuizScore> submitQuizScore({
+    required String studentId,
+    required int quizId,
+    required int score,
+    required int total,
+    required int durationSec,
+  }) async {
+    final uri = Uri.parse('$baseUrl/submit').replace(queryParameters: {
+      'studentId': studentId,
+      'quizId': quizId.toString(),
+      'score': score.toString(),
+      'total': total.toString(),
+      'duration': durationSec.toString(),
+    });
+
+    final res = await http.post(
+      uri,
+      headers: await _headers(),
+    );
+
+    if (res.statusCode == 200) {
+      final body = jsonDecode(res.body);
+      return QuizScore.fromJson(body);
     } else {
-      throw Exception('Erreur chargement quiz');
+      throw Exception(
+          'Erreur lors de la soumission du score: ${res.statusCode}');
     }
   }
 
-  Future<Quiz> getQuizById(int id) async {
-    final response = await http.get(Uri.parse('$baseUrl/$id'));
-    if (response.statusCode == 200) {
-      return Quiz.fromJson(jsonDecode(response.body));
+  @override
+  Future<QuizScore> getQuizResult(String studentId, int quizId) async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/result/$studentId/$quizId'),
+      headers: await _headers(),
+    );
+
+    if (res.statusCode == 200) {
+      final body = jsonDecode(res.body);
+      return QuizScore.fromJson(body);
     } else {
-      throw Exception('Quiz non trouvé');
+      throw Exception('Erreur récupération résultat: ${res.statusCode}');
     }
   }
 }

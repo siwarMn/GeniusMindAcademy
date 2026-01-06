@@ -1,12 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:codajoy/models/quiz_model.dart';
-import 'package:flutter/material.dart';
+import 'package:codajoy/services/quiz_service.dart';
 import 'quiz_play.dart';
 
-class QuizDetailScreen extends StatelessWidget {
-  final Quiz quiz;
+class QuizDetailScreen extends StatefulWidget {
+  final int quizId;
+  final String? studentId;
 
-  const QuizDetailScreen({Key? key, required this.quiz}) : super(key: key);
+  const QuizDetailScreen(
+      {Key? key, required this.quizId, required this.studentId})
+      : super(key: key);
+
+  @override
+  State<QuizDetailScreen> createState() => _QuizDetailScreenState();
+}
+
+class _QuizDetailScreenState extends State<QuizDetailScreen> {
+  late Future<Quiz> _futureQuiz;
+  final QuizService quizService = ApiQuizService();
+
+  @override
+  void initState() {
+    super.initState();
+    _futureQuiz = quizService.getQuizDetails(widget.quizId);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,99 +32,115 @@ class QuizDetailScreen extends StatelessWidget {
         title: Text('Détails du Quiz'),
         backgroundColor: Colors.blue[800],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // En-tête
-            Container(
-              padding: EdgeInsets.all(20),
-              color: Colors.blue[50],
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    quiz.title ?? 'Quiz sans titre',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue[900],
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Row(
+      body: FutureBuilder<Quiz>(
+        future: _futureQuiz,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Erreur : ${snapshot.error}'));
+          } else if (!snapshot.hasData) {
+            return Center(child: Text('Quiz non trouvé'));
+          }
+
+          final quiz = snapshot.data!;
+
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                // Header
+                Container(
+                  padding: EdgeInsets.all(20),
+                  color: Colors.blue[50],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildInfoChip(
-                        icon: Icons.question_answer,
-                        text:
-                            '${quiz.questions.length} question${quiz.questions.length > 1 ? 's' : ''}',
-                      ),
-                      SizedBox(width: 10),
-                      _buildInfoChip(
-                        icon: Icons.school,
-                        text: quiz.levelText,
-                      ),
-                      SizedBox(width: 10),
-                      Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: quiz.isActive == true
-                              ? Colors.green.withOpacity(0.1)
-                              : Colors.red.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(15),
+                      Text(
+                        quiz.title ?? 'Quiz sans titre',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue[900],
                         ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: quiz.isActive == true
-                                    ? Colors.green
-                                    : Colors.red,
-                                shape: BoxShape.circle,
-                              ),
+                      ),
+                      SizedBox(height: 10),
+                      Row(
+                        children: [
+                          _buildInfoChip(
+                            icon: Icons.question_answer,
+                            text:
+                                '${quiz.questions.length} question${quiz.questions.length > 1 ? 's' : ''}',
+                          ),
+                          SizedBox(width: 10),
+                          _buildInfoChip(
+                            icon: Icons.school,
+                            text: quiz.levelText,
+                          ),
+                          SizedBox(width: 10),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: quiz.active
+                                  ? Colors.green.withOpacity(0.1)
+                                  : Colors.red.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(15),
                             ),
-                            SizedBox(width: 6),
-                            Text(
-                              quiz.isActive == true ? 'Actif' : 'Inactif',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: quiz.isActive == true
-                                    ? Colors.green
-                                    : Colors.red,
-                                fontWeight: FontWeight.w500,
-                              ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        quiz.active ? Colors.green : Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                SizedBox(width: 6),
+                                Text(
+                                  quiz.active ? 'Actif' : 'Inactif',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color:
+                                        quiz.active ? Colors.green : Colors.red,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
+                ),
 
-            // Contenu
-            Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // Description
-                  _buildDescription(),
-                  SizedBox(height: 20),
-                  // Exemple de question
-                  _buildExampleQuestion(),
-                  SizedBox(height: 20),
-                  // Informations
-                  _buildQuizInfo(),
-                ],
-              ),
+                Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      _buildDescription(quiz),
+                      SizedBox(height: 20),
+                      _buildExampleQuestion(quiz),
+                      SizedBox(height: 20),
+                      _buildQuizInfo(quiz),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
-      bottomNavigationBar: _buildBottomButton(context),
+      bottomNavigationBar: FutureBuilder<Quiz>(
+        future: _futureQuiz,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return SizedBox.shrink();
+          final quiz = snapshot.data!;
+          return _buildBottomButton(context, quiz);
+        },
+      ),
     );
   }
 
@@ -133,7 +166,7 @@ class QuizDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDescription() {
+  Widget _buildDescription(Quiz quiz) {
     return Card(
       child: Padding(
         padding: EdgeInsets.all(16),
@@ -169,7 +202,7 @@ class QuizDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildExampleQuestion() {
+  Widget _buildExampleQuestion(Quiz quiz) {
     final firstQuestion = quiz.questions.isNotEmpty ? quiz.questions[0] : null;
 
     return Card(
@@ -198,7 +231,7 @@ class QuizDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    firstQuestion.question,
+                    firstQuestion.label, // ✅ utiliser le champ correct
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[800],
@@ -207,10 +240,7 @@ class QuizDetailScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 10),
                   Column(
-                    children:
-                        firstQuestion.options.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final option = entry.value;
+                    children: firstQuestion.options.map((option) {
                       return Padding(
                         padding: EdgeInsets.only(bottom: 5),
                         child: Row(
@@ -224,7 +254,8 @@ class QuizDetailScreen extends StatelessWidget {
                               ),
                               child: Center(
                                 child: Text(
-                                  String.fromCharCode(65 + index),
+                                  String.fromCharCode(65 +
+                                      firstQuestion.options.indexOf(option)),
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
@@ -233,7 +264,7 @@ class QuizDetailScreen extends StatelessWidget {
                               ),
                             ),
                             SizedBox(width: 10),
-                            Expanded(child: Text(option)),
+                            Expanded(child: Text(option.label)),
                           ],
                         ),
                       );
@@ -249,7 +280,7 @@ class QuizDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuizInfo() {
+  Widget _buildQuizInfo(Quiz quiz) {
     return Card(
       child: Padding(
         padding: EdgeInsets.all(16),
@@ -268,8 +299,7 @@ class QuizDetailScreen extends StatelessWidget {
             _buildInfoRow('Niveau', quiz.levelText),
             _buildInfoRow('Questions', '${quiz.questions.length}'),
             _buildInfoRow('Temps estimé', '${quiz.questions.length * 2} min'),
-            _buildInfoRow(
-                'Statut', quiz.isActive == true ? 'Actif' : 'Inactif'),
+            _buildInfoRow('Statut', quiz.active ? 'Actif' : 'Inactif'),
           ],
         ),
       ),
@@ -303,7 +333,7 @@ class QuizDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomButton(BuildContext context) {
+  Widget _buildBottomButton(BuildContext context, Quiz quiz) {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -315,7 +345,8 @@ class QuizDetailScreen extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => QuizPlayScreen(quiz: quiz),
+              builder: (context) =>
+                  QuizPlayScreen(quiz: quiz, studentId: widget.studentId),
             ),
           );
         },

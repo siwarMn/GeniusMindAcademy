@@ -1,34 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:codajoy/models/quiz_model.dart';
+import 'package:codajoy/services/quiz_service.dart';
 import 'quiz_result.dart';
 
 class QuizPlayScreen extends StatefulWidget {
   final Quiz quiz;
+  final String? studentId; // Id de l'étudiant pour start/submit
 
-  const QuizPlayScreen({Key? key, required this.quiz}) : super(key: key);
+  const QuizPlayScreen({
+    Key? key,
+    required this.quiz,
+    required this.studentId,
+  }) : super(key: key);
 
   @override
   _QuizPlayScreenState createState() => _QuizPlayScreenState();
 }
 
 class _QuizPlayScreenState extends State<QuizPlayScreen> {
+  final QuizService _quizService = ApiQuizService();
+
   int _currentIndex = 0;
   List<String?> _userAnswers = [];
   int _score = 0;
+  late DateTime _startTime;
 
   @override
   void initState() {
     super.initState();
     _userAnswers = List.filled(widget.quiz.questions.length, null);
+    _startTime = DateTime.now();
+    _startQuiz();
   }
 
-  QuizQuestion get _currentQuestion => widget.quiz.questions[_currentIndex];
+  void _startQuiz() async {
+    try {
+      await _quizService.startQuiz(widget.studentId ?? "", widget.quiz.id!);
+    } catch (e) {
+      print('Erreur startQuiz: $e');
+    }
+  }
+
+  Question get _currentQuestion => widget.quiz.questions[_currentIndex];
 
   void _selectAnswer(String answer) {
     if (_userAnswers[_currentIndex] == null) {
       setState(() {
         _userAnswers[_currentIndex] = answer;
-        if (answer == _currentQuestion.correctAnswer) {
+
+        // Vérifier si l'option choisie est correcte
+        final selectedOption =
+            _currentQuestion.options.firstWhere((opt) => opt.label == answer);
+
+        if (selectedOption.correct == true) {
           _score++;
         }
       });
@@ -53,17 +77,36 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
     }
   }
 
-  void _finishQuiz() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => QuizResultScreen(
-          quiz: widget.quiz,
-          userAnswers: _userAnswers,
-          score: _score,
+  void _finishQuiz() async {
+    final durationSec =
+        DateTime.now().difference(_startTime).inSeconds; // durée en secondes
+
+    try {
+      // Soumettre le score via le service
+      await _quizService.submitQuizScore(
+        studentId: widget.studentId ?? "",
+        quizId: widget.quiz.id!,
+        score: _score,
+        total: widget.quiz.questions.length,
+        durationSec: durationSec,
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => QuizResultScreen(
+            quiz: widget.quiz,
+            userAnswers: _userAnswers,
+            score: _score,
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      print('Erreur submitQuizScore: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur lors de la soumission du score')),
+      );
+    }
   }
 
   void _jumpToQuestion(int index) {
@@ -162,7 +205,7 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
                           ),
                           SizedBox(height: 10),
                           Text(
-                            _currentQuestion.question,
+                            _currentQuestion.label, // ici label de Question
                             style: TextStyle(fontSize: 18),
                           ),
                         ],
@@ -177,10 +220,10 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
                     child: ListView.builder(
                       itemCount: _currentQuestion.options.length,
                       itemBuilder: (context, index) {
-                        String option = _currentQuestion.options[index];
+                        final option = _currentQuestion.options[index].label;
                         bool isSelected = _userAnswers[_currentIndex] == option;
                         bool isCorrect =
-                            option == _currentQuestion.correctAnswer;
+                            _currentQuestion.options[index].correct ?? false;
 
                         return Card(
                           color: isSelected
