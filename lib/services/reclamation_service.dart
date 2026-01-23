@@ -1,110 +1,182 @@
 import 'package:codajoy/models/reclamation_model.dart';
-import 'dart:math';
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-abstract class ReclamationService {
-  Future<List<Reclamation>> getReclamations();
-  Future<bool> createReclamation(
-      String title, String description, String category);
-  Future<bool> updateReclamation(String id, String newStatus);
-  Future<bool> deleteReclamation(String id);
-  Future<bool> addComment(String id, String text);
-}
+class ReclamationService {
+  final Dio _dio = Dio();
+  final _storage = const FlutterSecureStorage();
 
-class MockReclamationService implements ReclamationService {
-  // In-memory list to simulate backend storage during session
-  final List<Reclamation> _mockDb = [
-    Reclamation(
-      id: "1",
-      title: "Problème de connexion",
-      description:
-          "Je n'arrive pas à me connecter à mon compte depuis ce matin.",
-      category: "Compte",
-      status: "Resolved",
-      createdAt: DateTime.now().subtract(Duration(days: 2)),
-    ),
-    Reclamation(
-      id: "2",
-      title: "PDF ne charge pas",
-      description: "Le cours de Mathématiques 7ème est vide.",
-      category: "Technique",
-      status: "In Progress",
-      createdAt: DateTime.now().subtract(Duration(hours: 4)),
-    ),
-  ];
+  final String _baseUrl = kIsWeb
+      ? 'http://localhost:8080/api/v1/auth'
+      : 'http://10.0.2.2:8080/api/v1/auth';
 
-  @override
-  Future<List<Reclamation>> getReclamations() async {
-    await Future.delayed(Duration(seconds: 1)); // Network delay
-    // Return copy to pretend it's fresh
-    return List.from(_mockDb);
+  Future<String?> getToken() async {
+    return await _storage.read(key: 'jwt_token');
   }
 
-  @override
-  Future<bool> createReclamation(
-      String title, String description, String category) async {
-    await Future.delayed(Duration(seconds: 1));
-    _mockDb.insert(
-        0,
-        Reclamation(
-          id: Random().nextInt(1000).toString(),
-          title: title,
-          description: description,
-          category: category,
-          status: "Open",
-          createdAt: DateTime.now(),
-        ));
-    return true;
-  }
-
-  @override
-  Future<bool> updateReclamation(String id, String newStatus) async {
-    await Future.delayed(Duration(seconds: 1));
-    final index = _mockDb.indexWhere((element) => element.id == id);
-    if (index != -1) {
-      var old = _mockDb[index];
-      _mockDb[index] = Reclamation(
-          id: old.id,
-          title: old.title,
-          description: old.description,
-          category: old.category,
-          status: newStatus,
-          createdAt: old.createdAt,
-          comments: old.comments);
-      return true;
+  Future<Map<String, String>> getHeaders() async {
+    String? token = await getToken();
+    if (token == null) {
+      throw Exception('No token found. Please login first.');
     }
-    return false;
+    return {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    };
   }
 
-  @override
-  Future<bool> deleteReclamation(String id) async {
-    await Future.delayed(Duration(seconds: 1));
-    _mockDb.removeWhere((element) => element.id == id);
-    return true;
-  }
+  Future<List<ReclamationResponse>> getReclamations() async {
+    try {
+      Map<String, String> headers = await getHeaders();
 
-  @override
-  Future<bool> addComment(String id, String text) async {
-    await Future.delayed(Duration(seconds: 1));
-    final index = _mockDb.indexWhere((element) => element.id == id);
-    if (index != -1) {
-      var old = _mockDb[index];
-      var newComments = List<ReclamationComment>.from(old.comments);
-      newComments.add(ReclamationComment(
-        author: "User", // Hardcoded for now, or fetch from UserService
-        text: text,
-        date: DateTime.now(),
-      ));
+      final response = await _dio.get(
+        '$_baseUrl/getReclam',
+        options: Options(headers: headers),
+      );
 
-      _mockDb[index] = Reclamation(
-          id: old.id,
-          title: old.title,
-          description: old.description,
-          category: old.category,
-          status: old.status,
-          createdAt: old.createdAt,
-          comments: newComments);
-      return true;
+      if (response.statusCode == 200) {
+        List<dynamic> data = response.data;
+        List<ReclamationResponse> reclamations = [];
+        for (var item in data) {
+          reclamations.add(ReclamationResponse.fromJson(item));
+        }
+        return reclamations;
+      } else {
+        throw Exception('Failed to load reclamations');
+      }
+    } catch (e) {
+      throw Exception('Error loading reclamations: $e');
     }
-    return false;
+  }
+
+  Future<ReclamationResponse> createReclamation(
+      String titre, String description, String categorie, String creerpar, String priority) async {
+    try {
+      Map<String, String> headers = await getHeaders();
+
+      ReclamationRequest request = ReclamationRequest(
+        titre: titre,
+        categorie: categorie,
+        description: description,
+        creerpar: creerpar,
+        priority: priority,
+      );
+
+      final response = await _dio.post(
+        '$_baseUrl/addReclamation',
+        data: request.toJson(),
+        options: Options(headers: headers),
+      );
+
+      if (response.statusCode == 200) {
+        return ReclamationResponse.fromJson(response.data);
+      } else {
+        throw Exception('Failed to create reclamation');
+      }
+    } catch (e) {
+      throw Exception('Error creating reclamation: $e');
+    }
+  }
+
+  Future<ReclamationResponse> assignReclamation(int id, String assignedTo) async {
+    try {
+      Map<String, String> headers = await getHeaders();
+      AssignmentRequest request = AssignmentRequest(assignedTo: assignedTo);
+
+      final response = await _dio.put(
+        '$_baseUrl/assignReclam/$id',
+        data: request.toJson(),
+        options: Options(headers: headers),
+      );
+
+      if (response.statusCode == 200) {
+        return ReclamationResponse.fromJson(response.data);
+      } else {
+        throw Exception('Failed to assign reclamation');
+      }
+    } catch (e) {
+      throw Exception('Error assigning reclamation: $e');
+    }
+  }
+
+  Future<ReclamationResponse> rateReclamation(int id, int rating) async {
+    try {
+      Map<String, String> headers = await getHeaders();
+      RatingRequest request = RatingRequest(rating: rating);
+
+      final response = await _dio.put(
+        '$_baseUrl/rateReclam/$id',
+        data: request.toJson(),
+        options: Options(headers: headers),
+      );
+
+      if (response.statusCode == 200) {
+        return ReclamationResponse.fromJson(response.data);
+      } else {
+        throw Exception('Failed to rate reclamation');
+      }
+    } catch (e) {
+      throw Exception('Error rating reclamation: $e');
+    }
+  }
+
+  Future<ReclamationResponse> updateStatus(int id, String status) async {
+    try {
+      Map<String, String> headers = await getHeaders();
+      StatusUpdateRequest request = StatusUpdateRequest(status: status);
+
+      final response = await _dio.put(
+        '$_baseUrl/updateStatus/$id',
+        data: request.toJson(),
+        options: Options(headers: headers),
+      );
+
+      if (response.statusCode == 200) {
+        return ReclamationResponse.fromJson(response.data);
+      } else {
+        throw Exception('Failed to update status');
+      }
+    } catch (e) {
+      throw Exception('Error updating status: $e');
+    }
+  }
+
+  Future<void> deleteReclamation(int id) async {
+    try {
+      Map<String, String> headers = await getHeaders();
+
+      final response = await _dio.delete(
+        '$_baseUrl/deleteReclam/$id',
+        options: Options(headers: headers),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to delete reclamation');
+      }
+    } catch (e) {
+      throw Exception('Error deleting reclamation: $e');
+    }
+  }
+
+  Future<CommentResponse> addComment(int id, String author, String text) async {
+    try {
+      Map<String, String> headers = await getHeaders();
+      CommentRequest request = CommentRequest(author: author, text: text);
+
+      final response = await _dio.post(
+        '$_baseUrl/addComment/$id',
+        data: request.toJson(),
+        options: Options(headers: headers),
+      );
+
+      if (response.statusCode == 200) {
+        return CommentResponse.fromJson(response.data);
+      } else {
+        throw Exception('Failed to add comment');
+      }
+    } catch (e) {
+      throw Exception('Error adding comment: $e');
+    }
   }
 }

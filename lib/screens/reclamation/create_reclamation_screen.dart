@@ -11,24 +11,26 @@ class CreateReclamationScreen extends StatelessWidget {
 
   final titleController = TextEditingController();
   final descController = TextEditingController();
-  final RxString selectedCategory = 'Technique'.obs;
+  final RxString selectedCategory = 'App Bug'.obs;
+  final RxString selectedPriority = 'Medium'.obs;
 
   final List<String> categories = [
-    'Technique',
-    'Compte',
-    'Facturation',
-    'Autre'
+    'App Bug',
+    'Course Content',
+    'Payment',
+    'Account',
+    'Feature Request',
+    'Other'
   ];
+
+  final List<String> priorities = ['Low', 'Medium', 'High', 'Critical'];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Nouveau Ticket"),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppTheme.primaryColor),
-          onPressed: () => Get.back(),
-        ),
+        iconTheme: IconThemeData(color: AppTheme.primaryColor),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -59,6 +61,19 @@ class CreateReclamationScreen extends StatelessWidget {
                 decoration: const InputDecoration(
                     labelText: "Catégorie",
                     prefixIcon: Icon(Icons.category_outlined)),
+              ),
+              const SizedBox(height: 16),
+
+              // Priority Dropdown
+              DropdownButtonFormField<String>(
+                value: selectedPriority.value,
+                items: priorities
+                    .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                    .toList(),
+                onChanged: (val) => selectedPriority.value = val!,
+                decoration: const InputDecoration(
+                    labelText: "Priorité",
+                    prefixIcon: Icon(Icons.priority_high)),
               ),
               const SizedBox(height: 16),
 
@@ -98,15 +113,20 @@ class CreateReclamationScreen extends StatelessWidget {
                                 bool success = await controller.addReclamation(
                                     titleController.text,
                                     descController.text,
-                                    selectedCategory.value);
+                                    selectedCategory.value,
+                                    selectedPriority.value);
+
                                 if (success) {
                                   Get.back();
-                                  Get.snackbar("Envoyé",
-                                      "Votre ticket a été créé avec succès");
-                                } else {
                                   Get.snackbar(
-                                      "Erreur", "Une erreur est survenue");
+                                    "Succès",
+                                    "Votre ticket a été créé avec succès",
+                                    snackPosition: SnackPosition.BOTTOM,
+                                    backgroundColor: Colors.green,
+                                    colorText: Colors.white,
+                                  );
                                 }
+                                // Error message is already shown by controller
                               }
                             },
                       child: controller.isLoading.value

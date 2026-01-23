@@ -1,5 +1,5 @@
 import 'package:codajoy/screens/courses/courses_list_screen.dart';
-import 'package:codajoy/controllers/quiz_controller.dart';
+import 'package:codajoy/screens/quiz/quiz_list.dart';
 import 'package:codajoy/screens/components/chatbot.dart';
 import 'package:codajoy/screens/reclamation/reclamation_list_screen.dart';
 import 'package:codajoy/screens/test_screen.dart';
