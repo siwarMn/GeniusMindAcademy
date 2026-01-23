@@ -1,5 +1,3 @@
-import 'package:codajoy/modals/user_model.dart';
-
 class AuthenticationRequest {
   final String email;
   final String password;
@@ -63,9 +61,9 @@ class AuthenticationResponse {
   factory AuthenticationResponse.fromJson(Map<String, dynamic> json) {
     return AuthenticationResponse(
       token: json['token'],
-      role: json['role']?.toString(), // Handle enum as string
-      nom: json['Nom'] ?? json['nom'], // Try both cases
-      prenom: json['prenom'] ?? json['Prenom'], // Try both cases
+      role: json['role']?.toString(),
+      nom: json['Nom'] ?? json['nom'],
+      prenom: json['prenom'] ?? json['Prenom'],
       image: json['image'],
       niveau: json['niveau'],
     );

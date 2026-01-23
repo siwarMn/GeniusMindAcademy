@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:codajoy/services/quiz_service.dart';
 import 'package:codajoy/models/quiz_model.dart';
+import 'package:get/get.dart';
 import 'quiz_detail_screen.dart';
 
 class QuizListScreen extends StatefulWidget {
@@ -47,6 +48,10 @@ class _QuizListScreenState extends State<QuizListScreen> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.blue[800],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: () => Get.back(),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.white),
@@ -132,13 +137,8 @@ class _QuizListScreenState extends State<QuizListScreen> {
                     quiz: quizzes[index],
                     userIdStr: userIdStr,
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => QuizDetailScreen(
-                              quizId: quizzes[index].id, studentId: userIdStr),
-                        ),
-                      );
+                      Get.to(() => QuizDetailScreen(
+                          quizId: quizzes[index].id, studentId: userIdStr));
                     },
                   );
                 },

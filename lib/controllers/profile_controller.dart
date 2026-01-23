@@ -1,32 +1,32 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:codajoy/models/auth_models.dart';
-import 'package:codajoy/modals/user_model.dart';
 import 'package:codajoy/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:get/get.dart'; // import get
-import 'package:codajoy/screens/components/profile_screen.dart'; // import ProfileScreen
+// import ProfileScreen
 import 'package:codajoy/controllers/login_controller.dart'; // import LoginController
 import 'package:codajoy/controllers/profile_menu_controller.dart'; // import ProfileMenuController
 
-
 class ProfileController extends GetxController {
   AuthService authService = AuthService();
-  
+
   // Storage
   final _storage = const FlutterSecureStorage();
 
   // User details controllers
-  final TextEditingController nameController = TextEditingController(); // Maps to Lastname (Nom)
-  final TextEditingController firstNameController = TextEditingController(); // Maps to Firstname (Prenom)
+  final TextEditingController nameController =
+      TextEditingController(); // Maps to Lastname (Nom)
+  final TextEditingController firstNameController =
+      TextEditingController(); // Maps to Firstname (Prenom)
   final TextEditingController emailController = TextEditingController();
 
   // Password controllers
   final TextEditingController oldPasswordController = TextEditingController();
   final TextEditingController newPasswordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   // Image Selection
   final ImagePicker _picker = ImagePicker();
@@ -43,7 +43,8 @@ class ProfileController extends GetxController {
     // Pre-fill controllers with current session data
     String? nom = await _storage.read(key: "nom");
     String? prenom = await _storage.read(key: "prenom");
-    String? email = await _storage.read(key: "email") ?? await _storage.read(key: "user_email");
+    String? email = await _storage.read(key: "email") ??
+        await _storage.read(key: "user_email");
     String? image = await _storage.read(key: "image");
 
     nameController.text = nom ?? "";
@@ -51,7 +52,7 @@ class ProfileController extends GetxController {
     emailController.text = email ?? "";
     currentImageString.value = image;
   }
-  
+
   // Helper to read niveau
   Future<String?> _getNiveau() async {
     return await _storage.read(key: "niveau");
@@ -67,17 +68,19 @@ class ProfileController extends GetxController {
   Future<void> updateFullProfile() async {
     // Dismiss keyboard
     FocusManager.instance.primaryFocus?.unfocus();
-    
+
     // Show loading
-    Get.dialog(const Center(child: CircularProgressIndicator()), barrierDismissible: false);
+    Get.dialog(const Center(child: CircularProgressIndicator()),
+        barrierDismissible: false);
 
     try {
       print("Starting updateFullProfile...");
-      
+
       // 1. Password Verification (if changing password)
-      String passwordToSave = ""; 
-      
-      if (newPasswordController.text.isNotEmpty || oldPasswordController.text.isNotEmpty) {
+      String passwordToSave = "";
+
+      if (newPasswordController.text.isNotEmpty ||
+          oldPasswordController.text.isNotEmpty) {
         if (oldPasswordController.text.isEmpty) {
           if (Get.isDialogOpen ?? false) Get.back(); // Close loading
           Get.snackbar("Erreur", "Veuillez entrer l'ancien mot de passe");
@@ -85,15 +88,17 @@ class ProfileController extends GetxController {
         }
         if (newPasswordController.text != confirmPasswordController.text) {
           if (Get.isDialogOpen ?? false) Get.back(); // Close loading
-          Get.snackbar("Erreur", "Les nouveaux mots de passe ne correspondent pas");
+          Get.snackbar(
+              "Erreur", "Les nouveaux mots de passe ne correspondent pas");
           return;
         }
-        
+
         // Verify old password
         try {
           String? currentEmail = emailController.text;
           print("Verifying password for $currentEmail");
-          await authService.authenticate(AuthenticationRequest(email: currentEmail, password: oldPasswordController.text));
+          await authService.authenticate(AuthenticationRequest(
+              email: currentEmail, password: oldPasswordController.text));
           passwordToSave = newPasswordController.text;
         } catch (e) {
           print("Password verification failed: $e");
@@ -106,14 +111,14 @@ class ProfileController extends GetxController {
       // 2. Prepare Image
       String? encodedImage;
       if (selectedImage.value != null) {
-         final bytes = await selectedImage.value!.readAsBytes();
-         encodedImage = base64Encode(bytes);
-      } 
-      
+        final bytes = await selectedImage.value!.readAsBytes();
+        encodedImage = base64Encode(bytes);
+      }
+
       // 3. Construct Update Body
       String? niveau = await _getNiveau();
       print("Niveau retrieved: $niveau");
-      
+
       Map<String, dynamic> updateBody = {
         'firstname': firstNameController.text,
         'lastname': nameController.text,
@@ -123,43 +128,43 @@ class ProfileController extends GetxController {
 
       // Add password fields only if changing
       if (passwordToSave.isNotEmpty) {
-          updateBody['oldPassword'] = oldPasswordController.text;
-          updateBody['newPassword'] = newPasswordController.text;
-          updateBody['confirmPassword'] = confirmPasswordController.text;
+        updateBody['oldPassword'] = oldPasswordController.text;
+        updateBody['newPassword'] = newPasswordController.text;
+        updateBody['confirmPassword'] = confirmPasswordController.text;
       }
-      
+
       print("Sending updateProfile request...");
       await authService.updateProfile(updateBody, image: selectedImage.value);
       print("Update successful.");
-      
+
       // 4. Update Local Storage
       await _storage.write(key: "nom", value: nameController.text);
       await _storage.write(key: "prenom", value: firstNameController.text);
       if (encodedImage != null) {
         await _storage.write(key: "image", value: encodedImage);
-        currentImageString.value = encodedImage; 
+        currentImageString.value = encodedImage;
       }
-            
+
       // Close loading dialog
       if (Get.isDialogOpen ?? false) Get.back();
 
-      Get.snackbar("Succès", "Profil mis à jour", snackPosition: SnackPosition.BOTTOM, duration: Duration(seconds: 2));
-      
+      Get.snackbar("Succès", "Profil mis à jour",
+          snackPosition: SnackPosition.BOTTOM, duration: Duration(seconds: 2));
+
       // Wait a bit for snackbar then navigate back
       await Future.delayed(Duration(milliseconds: 1000));
       Navigator.of(Get.context!).pop(); // Safer than Get.back() sometimes
-      
+
       if (Get.isRegistered<ProfileMenuController>()) {
-         Get.find<ProfileMenuController>().onInit(); 
+        Get.find<ProfileMenuController>().onInit();
       }
-      
     } catch (e) {
       print("Update Error: $e");
       if (Get.isDialogOpen ?? false) Get.back(); // Close loading
-      Get.snackbar("Erreur", "Mise à jour échouée: $e", duration: Duration(seconds: 5));
+      Get.snackbar("Erreur", "Mise à jour échouée: $e",
+          duration: Duration(seconds: 5));
     }
   }
-
 
   Future<String?> getToken() async {
     LoginController login = Get.put(LoginController());

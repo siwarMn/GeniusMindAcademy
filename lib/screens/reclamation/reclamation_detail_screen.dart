@@ -18,11 +18,15 @@ class ReclamationDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Détails du Ticket"),
+        title: const Text("Details du Ticket"),
         backgroundColor: Colors.white,
         foregroundColor: AppTheme.primaryColor,
         elevation: 0,
         iconTheme: IconThemeData(color: AppTheme.primaryColor),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+          onPressed: () => Get.back(),
+        ),
       ),
       backgroundColor: const Color(0xFFF5F5F5),
       body: Obx(() {

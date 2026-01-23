@@ -1,7 +1,6 @@
 import 'package:codajoy/controllers/profile_menu_controller.dart';
 import 'package:codajoy/controllers/login_controller.dart';
 import 'package:codajoy/screens/components/ModifierProfile.dart';
-import 'package:codajoy/screens/login_screen.dart';
 import 'package:codajoy/utils/image_utils.dart'; // Import utils
 
 import 'package:flutter/material.dart';
@@ -19,7 +18,7 @@ class ProfileScreen extends StatelessWidget {
         child: Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () {},
+          onPressed: () => Get.back(),
           icon: const Icon(Icons.arrow_back),
         ),
         title: Text(
@@ -43,40 +42,45 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 // User Header
                 Obx(() => Container(
-                  margin: EdgeInsets.only(bottom: 20),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundColor: Colors.white,
-                        backgroundImage: controller.userImage.value.isNotEmpty
-                            ? MemoryImage(ImageUtils.decodeImage(controller.userImage.value)!)
-                            : null, 
-                        child: controller.userImage.value.isEmpty || ImageUtils.decodeImage(controller.userImage.value) == null
-                            ? Icon(Icons.person, size: 30)
-                            : null,
-                      ),
-                      SizedBox(width: 15),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      margin: EdgeInsets.only(bottom: 20),
+                      child: Row(
                         children: [
-                          Text(
-                            "Bonjour,",
-                            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                          CircleAvatar(
+                            radius: 30,
+                            backgroundColor: Colors.white,
+                            backgroundImage:
+                                controller.userImage.value.isNotEmpty
+                                    ? MemoryImage(ImageUtils.decodeImage(
+                                        controller.userImage.value)!)
+                                    : null,
+                            child: controller.userImage.value.isEmpty ||
+                                    ImageUtils.decodeImage(
+                                            controller.userImage.value) ==
+                                        null
+                                ? Icon(Icons.person, size: 30)
+                                : null,
                           ),
-                          Text(
-                            controller.userName.value,
-                            style: TextStyle(
-                              fontSize: 18, 
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87
-                            ),
-                          ),
+                          SizedBox(width: 15),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Bonjour,",
+                                style: TextStyle(
+                                    fontSize: 14, color: Colors.grey[600]),
+                              ),
+                              Text(
+                                controller.userName.value,
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87),
+                              ),
+                            ],
+                          )
                         ],
-                      )
-                    ],
-                  ),
-                )),
+                      ),
+                    )),
                 Container(
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.blue),

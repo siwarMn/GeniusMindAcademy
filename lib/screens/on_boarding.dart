@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dots_indicator/dots_indicator.dart';
 import 'login_screen.dart';
-import'package:get/get.dart';
+import 'package:get/get.dart';
+
 class OnBoarding extends StatelessWidget {
   const OnBoarding({Key? key}) : super(key: key);
 
@@ -23,9 +24,8 @@ class OnBoarding extends StatelessWidget {
               currentPage: 0,
               pageCount: 3,
               onTap: () {
-                // Add onTap functionality for the first page
-                print('Tapped on the first page');
-                 Get.to(LoginScreen());
+                // Navigate to login screen
+                Get.to(() => LoginScreen());
               },
               container: Container(
                 color: Colors.blue,
@@ -36,7 +36,7 @@ class OnBoarding extends StatelessWidget {
             ),
             buildPage(
               imagePath: "assets/images/onboarding2.jpg",
-                 title: "trouver le meilleur ",
+              title: "trouver le meilleur ",
               subTitle: "cours avec nous",
               description: [
                 "L'apprentissage peut être plus facile",
@@ -46,7 +46,8 @@ class OnBoarding extends StatelessWidget {
               currentPage: 1,
               pageCount: 3,
               onTap: () {
-                Get.to(LoginScreen());
+                // Navigate to login screen
+                Get.to(() => LoginScreen());
               },
               container: Container(
                 color: Colors.blue,
@@ -57,7 +58,7 @@ class OnBoarding extends StatelessWidget {
             ),
             buildPage(
               imagePath: "assets/images/onboarding3.png",
-                 title: "trouver le meilleur ",
+              title: "trouver le meilleur ",
               subTitle: "cours avec nous",
               description: [
                 "L'apprentissage peut être plus facile",
@@ -134,9 +135,7 @@ class OnBoarding extends StatelessWidget {
                     padding: EdgeInsets.only(top: 50.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
-                      children: description
-                          .map((text) => Text(text))
-                          .toList(),
+                      children: description.map((text) => Text(text)).toList(),
                     ),
                   ),
                 ],

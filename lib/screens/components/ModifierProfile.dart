@@ -14,6 +14,10 @@ class ModifierProfilPage extends StatelessWidget {
       appBar: AppBar(
         title: Text('Modifier Profil'),
         backgroundColor: Colors.grey[200],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+          onPressed: () => Get.back(),
+        ),
       ),
       backgroundColor: Colors.grey[200],
       body: SingleChildScrollView(

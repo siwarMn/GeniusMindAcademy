@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:codajoy/models/quiz_model.dart';
+import 'package:get/get.dart';
 
 class QuizResultScreen extends StatelessWidget {
   final Quiz quiz;
@@ -34,6 +35,10 @@ class QuizResultScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Résultats'),
         backgroundColor: Colors.blue[800],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: () => Get.back(),
+        ),
       ),
       body: Column(
         children: [
@@ -149,7 +154,7 @@ class QuizResultScreen extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
-                      Navigator.pop(context);
+                      Get.back();
                     },
                     child: Text('Retour'),
                   ),
@@ -158,7 +163,8 @@ class QuizResultScreen extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.popUntil(context, (route) => route.isFirst);
+                      // Go back to the quiz list (2 screens back)
+                      Get.until((route) => route.isFirst);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,

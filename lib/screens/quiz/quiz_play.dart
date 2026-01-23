@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:codajoy/models/quiz_model.dart';
 import 'package:codajoy/services/quiz_service.dart';
+import 'package:get/get.dart';
 import 'quiz_result.dart';
 
 class QuizPlayScreen extends StatefulWidget {
@@ -91,16 +92,11 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
         durationSec: durationSec,
       );
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => QuizResultScreen(
+      Get.off(() => QuizResultScreen(
             quiz: widget.quiz,
             userAnswers: _userAnswers,
             score: _score,
-          ),
-        ),
-      );
+          ));
     } catch (e) {
       print('Erreur submitQuizScore: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -124,6 +120,23 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
           style: TextStyle(fontSize: 16),
         ),
         backgroundColor: Colors.blue[800],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: () {
+            // Show confirmation dialog before leaving quiz
+            Get.defaultDialog(
+              title: "Quitter le quiz?",
+              middleText: "Votre progression sera perdue.",
+              textConfirm: "Oui",
+              textCancel: "Non",
+              confirmTextColor: Colors.white,
+              onConfirm: () {
+                Get.back(); // Close dialog
+                Get.back(); // Go back to previous screen
+              },
+            );
+          },
+        ),
         actions: [
           Padding(
             padding: EdgeInsets.only(right: 16),

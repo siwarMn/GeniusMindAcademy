@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:codajoy/models/quiz_model.dart';
 import 'package:codajoy/services/quiz_service.dart';
+import 'package:get/get.dart';
 import 'quiz_play.dart';
 
 class QuizDetailScreen extends StatefulWidget {
@@ -31,6 +32,10 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
       appBar: AppBar(
         title: Text('Détails du Quiz'),
         backgroundColor: Colors.blue[800],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: () => Get.back(),
+        ),
       ),
       body: FutureBuilder<Quiz>(
         future: _futureQuiz,
@@ -342,13 +347,7 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
       ),
       child: ElevatedButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  QuizPlayScreen(quiz: quiz, studentId: widget.studentId),
-            ),
-          );
+          Get.to(() => QuizPlayScreen(quiz: quiz, studentId: widget.studentId));
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.green,

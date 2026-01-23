@@ -15,7 +15,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  LoginController loginu=Get.put(LoginController());
+  LoginController loginu = Get.put(LoginController());
   Uint8List? pdfBytes; // Variable to hold PDF bytes
   int? _totalPages; // Variable to hold total pages
   int _currentPage = 0; // Variable to track current page
@@ -23,38 +23,37 @@ class _MyHomePageState extends State<MyHomePage> {
   PDFViewController? _pdfViewController; // Controller for PDFView widget
 
   // Function to fetch PDF bytes from URL
- Future<void> getPdfBytes(String url) async {
-  Future<String?> authtoken = loginu.gettoken();
-  try {
-    var headers = {
-      'Authorization':  "Bearer $authtoken", // Replace YourAccessTokenHere with your actual access token
-    'Content-Type': 'application/json; charset=utf-8'
-    };
+  Future<void> getPdfBytes(String url) async {
+    Future<String?> authtoken = loginu.gettoken();
+    try {
+      var headers = {
+        'Authorization':
+            "Bearer $authtoken", // Replace YourAccessTokenHere with your actual access token
+        'Content-Type': 'application/json; charset=utf-8'
+      };
 
-    var response = await http.get(
-      Uri.parse(url),
-      headers: headers,
-    );
+      var response = await http.get(
+        Uri.parse(url),
+        headers: headers,
+      );
 
-    if (response.statusCode == 200) {
-      setState(() {
-        pdfBytes = response.bodyBytes; // Set PDF bytes
-      });
-    } else {
-      throw Exception('Failed to load PDF: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        setState(() {
+          pdfBytes = response.bodyBytes; // Set PDF bytes
+        });
+      } else {
+        throw Exception('Failed to load PDF: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error opening URL file: $e');
     }
-  } catch (e) {
-    throw Exception('Error opening URL file: $e');
   }
-}
-
-
 
   @override
   void initState() {
     super.initState();
     // Fetch PDF bytes from URL
-    getPdfBytes("http://192.168.42.84:8080/api/v1/auth/file/get").then((_) {
+    getPdfBytes("http://localhost:8080/api/v1/auth/file/get").then((_) {
       setState(() {
         pdfReady = true; // Mark PDF as ready for viewing
       });
@@ -74,13 +73,13 @@ class _MyHomePageState extends State<MyHomePage> {
                   _pdfViewController = vc; // Set PDF controller
                 });
               },
-              onPageChanged: (int ? page, int ?totalPages) {
+              onPageChanged: (int? page, int? totalPages) {
                 setState(() {
                   _currentPage = page!; // Update current page
                   _totalPages = totalPages; // Update total pages
                 });
               },
-              onRender: (int ?totalPages) {
+              onRender: (int? totalPages) {
                 setState(() {
                   _totalPages = totalPages; // Set total pages
                 });
@@ -101,7 +100,8 @@ class _MyHomePageState extends State<MyHomePage> {
             onPressed: () {
               if (_currentPage > 0) {
                 _currentPage--;
-                _pdfViewController!.setPage(_currentPage); // Navigate to previous page
+                _pdfViewController!
+                    .setPage(_currentPage); // Navigate to previous page
               }
             },
           ),
@@ -116,7 +116,8 @@ class _MyHomePageState extends State<MyHomePage> {
             onPressed: () {
               if (_currentPage < _totalPages! - 1) {
                 _currentPage++;
-                _pdfViewController!.setPage(_currentPage); // Navigate to next page
+                _pdfViewController!
+                    .setPage(_currentPage); // Navigate to next page
               }
             },
           ),
@@ -125,5 +126,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
-

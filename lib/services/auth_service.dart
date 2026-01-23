@@ -12,7 +12,7 @@ class AuthService {
   // Note: For Web to work with localhost, the backend must support CORS.
   final String _baseUrl = kIsWeb 
       ? 'http://localhost:8080/api/v1/auth' 
-      : 'http://10.0.2.2:8080/api/v1/auth';
+      : 'http://localhost:8080/api/v1/auth';
   final _storage = const FlutterSecureStorage();
 
   Future<AuthenticationResponse> register(

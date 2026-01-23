@@ -9,7 +9,7 @@ class ReclamationService {
 
   final String _baseUrl = kIsWeb
       ? 'http://localhost:8080/api/v1/auth'
-      : 'http://10.0.2.2:8080/api/v1/auth';
+      : 'http://localhost:8080/api/v1/auth';
 
   Future<String?> getToken() async {
     return await _storage.read(key: 'jwt_token');

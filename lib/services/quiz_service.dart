@@ -29,7 +29,7 @@ class ApiQuizService implements QuizService {
   /* même règle que ReclamationService */
   final String baseUrl = kIsWeb
       ? 'http://localhost:8080/api/v1/auth/quiz'
-      : 'http://10.0.2.2:8080/api/v1/auth/quiz';
+      : 'http://localhost:8080/api/v1/auth/quiz';
 
   Future<Map<String, String>> _headers() async {
     final token = await _storage.read(key: 'jwt_token');
