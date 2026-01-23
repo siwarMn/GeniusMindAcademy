@@ -1,11 +1,14 @@
+import 'dart:typed_data';
 import 'package:codajoy/controllers/courses_list_controller.dart';
-import 'package:codajoy/Config/api_config.dart';
 import 'package:codajoy/theme/app_theme.dart';
+import 'package:codajoy/services/courses_service.dart';
+import 'package:codajoy/services/download_service.dart';
+import 'package:codajoy/screens/courses/pdf_viewer_screen.dart';
+import 'package:codajoy/services/pdf_helper.dart' as pdf_helper;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 // Screen that shows list of PDF courses in a nice grid
 class CoursesListScreen extends StatelessWidget {
@@ -18,27 +21,23 @@ class CoursesListScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Cours Disponibles"),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppTheme.primaryColor),
+          icon: const Icon(Icons.arrow_back_ios),
           onPressed: () => Get.back(),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: AppTheme.primaryColor),
+            icon: const Icon(Icons.refresh),
             onPressed: () => controller.fetchCourses(),
             tooltip: 'Actualiser',
           ),
         ],
       ),
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppTheme.backgroundColor,
       // Button to add new PDF
       floatingActionButton: FloatingActionButton(
         onPressed: () => _pickAndUploadFile(),
-        backgroundColor: AppTheme.primaryColor,
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
       body: Obx(() {
         // Show loading
@@ -61,26 +60,22 @@ class CoursesListScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.menu_book, size: 80, color: Colors.grey[300]),
-                SizedBox(height: 16),
+                Icon(Icons.menu_book, size: 80, color: AppTheme.textHint),
+                const SizedBox(height: 16),
                 Text(
                   "Aucun cours disponible",
-                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 18, color: AppTheme.textSecondary),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
                   "Cliquez sur + pour ajouter un cours",
-                  style: TextStyle(fontSize: 14, color: Colors.grey[400]),
+                  style: TextStyle(fontSize: 14, color: AppTheme.textHint),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 ElevatedButton.icon(
                   onPressed: () => controller.fetchCourses(),
-                  icon: Icon(Icons.refresh),
-                  label: Text("Actualiser"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
-                    foregroundColor: Colors.white,
-                  ),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text("Actualiser"),
                 ),
               ],
             ),
@@ -120,7 +115,7 @@ class CoursesListScreen extends StatelessWidget {
                             // PDF icon background
                             Container(
                               decoration: BoxDecoration(
-                                color: Colors.blue[50],
+                                color: AppTheme.primaryColor.withOpacity(0.1),
                                 borderRadius: const BorderRadius.vertical(
                                   top: Radius.circular(15),
                                 ),
@@ -129,7 +124,7 @@ class CoursesListScreen extends StatelessWidget {
                                 child: Icon(
                                   Icons.picture_as_pdf,
                                   size: 50,
-                                  color: Colors.red[400],
+                                  color: AppTheme.errorColor,
                                 ),
                               ),
                             ),
@@ -142,7 +137,7 @@ class CoursesListScreen extends StatelessWidget {
                                 radius: 15,
                                 child: IconButton(
                                   padding: EdgeInsets.zero,
-                                  icon: Icon(Icons.delete, size: 16, color: Colors.red),
+                                  icon: Icon(Icons.delete, size: 16, color: AppTheme.errorColor),
                                   onPressed: () => _confirmDelete(course),
                                 ),
                               ),
@@ -152,12 +147,12 @@ class CoursesListScreen extends StatelessWidget {
                               left: 5,
                               top: 5,
                               child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: Colors.green,
+                                  color: AppTheme.successColor,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: Text(
+                                child: const Text(
                                   "PDF",
                                   style: TextStyle(
                                     color: Colors.white,
@@ -191,7 +186,7 @@ class CoursesListScreen extends StatelessWidget {
                               Text(
                                 "Cliquez pour ouvrir",
                                 style: TextStyle(
-                                  color: Colors.grey[500],
+                                  color: AppTheme.textHint,
                                   fontSize: 11,
                                 ),
                               ),
@@ -214,8 +209,8 @@ class CoursesListScreen extends StatelessWidget {
   void _showCourseOptions(BuildContext context, course) {
     Get.bottomSheet(
       Container(
-        padding: EdgeInsets.all(20),
-        decoration: BoxDecoration(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -224,23 +219,23 @@ class CoursesListScreen extends StatelessWidget {
           children: [
             Text(
               course.fileName,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             // View PDF button
             ListTile(
               leading: Icon(Icons.visibility, color: AppTheme.primaryColor),
-              title: Text("Voir le PDF"),
+              title: const Text("Voir le PDF"),
               onTap: () {
                 Get.back();
-                _openPdf(course.id);
+                _openPdf(course.id, course.fileName);
               },
             ),
             // Download button
             ListTile(
-              leading: Icon(Icons.download, color: Colors.green),
-              title: Text("Telecharger"),
+              leading: Icon(Icons.download, color: AppTheme.successColor),
+              title: const Text("Telecharger"),
               onTap: () {
                 Get.back();
                 _downloadPdf(course.id, course.fileName);
@@ -248,58 +243,88 @@ class CoursesListScreen extends StatelessWidget {
             ),
             // Delete button
             ListTile(
-              leading: Icon(Icons.delete, color: Colors.red),
-              title: Text("Supprimer"),
+              leading: Icon(Icons.delete, color: AppTheme.errorColor),
+              title: const Text("Supprimer"),
               onTap: () {
                 Get.back();
                 _confirmDelete(course);
               },
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
           ],
         ),
       ),
     );
   }
 
-  // Open PDF in browser
-  Future<void> _openPdf(int fileId) async {
-    try {
-      // Get token
-      final storage = FlutterSecureStorage();
-      String? token = await storage.read(key: 'jwt_token');
-
-      // Build URL
-      String url = '${ApiConfig.baseUrl}/File/$fileId';
-
-      // For web, we can open directly
-      // For mobile, we'll open in browser
-      final uri = Uri.parse(url);
-
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        Get.snackbar("Erreur", "Impossible d'ouvrir le PDF");
-      }
-    } catch (e) {
-      Get.snackbar("Erreur", "Erreur: $e");
+  // Open PDF - works on both web and mobile
+  Future<void> _openPdf(int fileId, String fileName) async {
+    if (kIsWeb) {
+      // Web: fetch bytes and open in browser
+      await _openPdfWeb(fileId, fileName);
+    } else {
+      // Mobile: navigate to PDF viewer screen
+      Get.to(() => PdfViewerScreen(
+        fileId: fileId,
+        title: fileName,
+      ));
     }
   }
 
-  // Download PDF
-  Future<void> _downloadPdf(int fileId, String fileName) async {
+  // Web-specific PDF opening
+  Future<void> _openPdfWeb(int fileId, String fileName) async {
     try {
-      String url = '${ApiConfig.baseUrl}/File/download/$fileId';
-      final uri = Uri.parse(url);
+      Get.snackbar("Chargement", "Ouverture du PDF...",
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 2));
 
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-        Get.snackbar("Telechargement", "Le telechargement va commencer...");
+      final service = CoursesService();
+      Uint8List? bytes = await service.getPdfFile(fileId);
+
+      if (bytes != null && bytes.isNotEmpty) {
+        pdf_helper.openPdfInBrowser(bytes, fileName);
       } else {
-        Get.snackbar("Erreur", "Impossible de telecharger");
+        Get.snackbar("Erreur", "Impossible de charger le PDF",
+            snackPosition: SnackPosition.BOTTOM);
       }
     } catch (e) {
-      Get.snackbar("Erreur", "Erreur: $e");
+      Get.snackbar("Erreur", "Erreur: $e",
+          snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  // Download PDF - works on both web and mobile
+  Future<void> _downloadPdf(int fileId, String fileName) async {
+    if (kIsWeb) {
+      // Web: fetch bytes and trigger browser download
+      await _downloadPdfWeb(fileId, fileName);
+    } else {
+      // Mobile: use download service
+      DownloadService().downloadPdf(fileId, fileName);
+    }
+  }
+
+  // Web-specific PDF download
+  Future<void> _downloadPdfWeb(int fileId, String fileName) async {
+    try {
+      Get.snackbar("Telechargement", "Preparation du fichier...",
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 2));
+
+      final service = CoursesService();
+      Uint8List? bytes = await service.getPdfFile(fileId);
+
+      if (bytes != null && bytes.isNotEmpty) {
+        pdf_helper.downloadPdfInBrowser(bytes, fileName);
+        Get.snackbar("Succes", "Telechargement termine!",
+            snackPosition: SnackPosition.BOTTOM);
+      } else {
+        Get.snackbar("Erreur", "Impossible de telecharger le PDF",
+            snackPosition: SnackPosition.BOTTOM);
+      }
+    } catch (e) {
+      Get.snackbar("Erreur", "Erreur: $e",
+          snackPosition: SnackPosition.BOTTOM);
     }
   }
 

@@ -26,7 +26,6 @@ abstract class QuizService {
 class ApiQuizService implements QuizService {
   final _storage = const FlutterSecureStorage();
 
-  /* même règle que ReclamationService */
   final String baseUrl = kIsWeb
       ? 'http://localhost:8080/api/v1/auth/quiz'
       : 'http://localhost:8080/api/v1/auth/quiz';

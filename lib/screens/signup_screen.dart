@@ -63,8 +63,10 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.surfaceColor,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: AppTheme.primaryColor),
           onPressed: () => Get.back(),
@@ -100,16 +102,16 @@ class _SignupScreenState extends State<SignupScreen> {
                     onTap: _pickImage,
                     child: CircleAvatar(
                       radius: 50,
-                      backgroundColor: Colors.grey[200],
+                      backgroundColor: AppTheme.backgroundColor,
                       backgroundImage: _getImageProvider(),
                       child: _image == null
-                          ? const Icon(Icons.camera_alt, size: 40, color: Colors.grey)
+                          ? Icon(Icons.camera_alt, size: 40, color: AppTheme.textHint)
                           : null,
                     ),
                   ),
                 ),
                 const SizedBox(height: 10),
-                const Center(child: Text("Ajouter une photo de profil", style: TextStyle(color: Colors.grey))),
+                Center(child: Text("Ajouter une photo de profil", style: TextStyle(color: AppTheme.textSecondary))),
 
                 const SizedBox(height: 20),
 

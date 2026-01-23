@@ -431,18 +431,7 @@ class ReclamationListScreen extends StatelessWidget {
 
   // Get color based on status
   Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'open':
-        return Colors.orange;
-      case 'in progress':
-        return Colors.blue;
-      case 'resolved':
-        return Colors.green;
-      case 'closed':
-        return Colors.grey;
-      default:
-        return Colors.blueGrey;
-    }
+    return AppTheme.getStatusColor(status);
   }
 
   // Get icon based on status
@@ -463,18 +452,7 @@ class ReclamationListScreen extends StatelessWidget {
 
   // Get color based on priority
   Color _getPriorityColor(String priority) {
-    switch (priority.toLowerCase()) {
-      case 'low':
-        return Colors.green;
-      case 'medium':
-        return Colors.orange;
-      case 'high':
-        return Colors.deepOrange;
-      case 'critical':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
+    return AppTheme.getPriorityColor(priority);
   }
 
   // Show delete confirmation dialog

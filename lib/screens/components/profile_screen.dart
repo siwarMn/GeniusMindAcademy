@@ -1,8 +1,8 @@
 import 'package:codajoy/controllers/profile_menu_controller.dart';
 import 'package:codajoy/controllers/login_controller.dart';
 import 'package:codajoy/screens/components/ModifierProfile.dart';
-import 'package:codajoy/utils/image_utils.dart'; // Import utils
-
+import 'package:codajoy/theme/app_theme.dart';
+import 'package:codajoy/utils/image_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -19,21 +19,11 @@ class ProfileScreen extends StatelessWidget {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios),
         ),
-        title: Text(
-          "Profil",
-          style: Theme.of(context).textTheme.headlineMedium!,
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: Icon(isDark ? Icons.wb_sunny : Icons.nightlight_round),
-          ),
-        ],
-        backgroundColor: Colors.grey[200],
+        title: const Text("Profil"),
       ),
-      backgroundColor: Colors.grey[200],
+      backgroundColor: AppTheme.backgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Container(
@@ -67,14 +57,14 @@ class ProfileScreen extends StatelessWidget {
                               Text(
                                 "Bonjour,",
                                 style: TextStyle(
-                                    fontSize: 14, color: Colors.grey[600]),
+                                    fontSize: 14, color: AppTheme.textSecondary),
                               ),
                               Text(
                                 controller.userName.value,
                                 style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.black87),
+                                    color: AppTheme.textPrimary),
                               ),
                             ],
                           )
@@ -83,15 +73,15 @@ class ProfileScreen extends StatelessWidget {
                     )),
                 Container(
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.blue),
-                    borderRadius: BorderRadius.circular(10.0),
+                    border: Border.all(color: AppTheme.primaryColor),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                   ),
                   child: TextField(
-                    controller: controller.searchController, // Use controller
+                    controller: controller.searchController,
                     decoration: InputDecoration(
                       labelText: 'Recherche',
                       border: InputBorder.none,
-                      prefixIcon: Icon(Icons.search),
+                      prefixIcon: Icon(Icons.search, color: AppTheme.primaryColor),
                     ),
                   ),
                 ),
@@ -132,7 +122,7 @@ class ProfileScreen extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: BottomAppBar(
-        color: Colors.grey[200],
+        color: AppTheme.surfaceColor,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -142,8 +132,8 @@ class ProfileScreen extends StatelessWidget {
               },
               child: Column(
                 children: [
-                  Icon(Icons.home, color: Colors.blue),
-                  Text('Accueil', style: TextStyle(color: Colors.blue)),
+                  Icon(Icons.home, color: AppTheme.primaryColor),
+                  Text('Accueil', style: TextStyle(color: AppTheme.primaryColor)),
                 ],
               ),
             ),
@@ -153,9 +143,9 @@ class ProfileScreen extends StatelessWidget {
               },
               child: Column(
                 children: [
-                  Icon(Icons.edit, color: Colors.green),
+                  Icon(Icons.edit, color: AppTheme.successColor),
                   Text('Modifier Profil',
-                      style: TextStyle(color: Colors.green)),
+                      style: TextStyle(color: AppTheme.successColor)),
                 ],
               ),
             ),
@@ -165,8 +155,8 @@ class ProfileScreen extends StatelessWidget {
               },
               child: Column(
                 children: [
-                  Icon(Icons.logout, color: Colors.red),
-                  Text('Déconnexion', style: TextStyle(color: Colors.red)),
+                  Icon(Icons.logout, color: AppTheme.errorColor),
+                  Text('Deconnexion', style: TextStyle(color: AppTheme.errorColor)),
                 ],
               ),
             ),

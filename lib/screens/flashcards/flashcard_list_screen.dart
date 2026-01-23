@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:codajoy/theme/app_theme.dart';
 import '../../controllers/flashcard_controller.dart';
 import 'flashcard_edit_screen.dart';
 import './flashcards_session_screen.dart';
@@ -15,22 +16,28 @@ class FlashcardListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-  title: const Text('Flashcards'),
-  actions: [
-    IconButton(
-      icon: const Icon(Icons.play_arrow),
-      onPressed: () {
-        final ids = controller.filteredCards.map((c) => c.id).toList();
-        if (ids.isEmpty) {
-          Get.snackbar('Training', 'No cards to train with current filters');
-          return;
-        }
-        Get.to(() => FlashcardsSessionScreen(cardIds: ids));
-      },
-    ),
-  ],
-),
-
+        title: const Text('Flashcards'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+          onPressed: () => Get.back(),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.play_arrow),
+            tooltip: 'Commencer',
+            onPressed: () {
+              final ids = controller.filteredCards.map((c) => c.id).toList();
+              if (ids.isEmpty) {
+                Get.snackbar('Training', 'Aucune carte avec ces filtres',
+                    snackPosition: SnackPosition.BOTTOM);
+                return;
+              }
+              Get.to(() => FlashcardsSessionScreen(cardIds: ids));
+            },
+          ),
+        ],
+      ),
+      backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
           // 🔎 Filters: search + category
@@ -93,7 +100,31 @@ class FlashcardListScreen extends StatelessWidget {
               final cards = controller.filteredCards;
 
               if (cards.isEmpty) {
-                return const Center(child: Text('No flashcards yet'));
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.style_outlined, size: 80, color: AppTheme.textHint),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Aucune flashcard',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: AppTheme.textSecondary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Cliquez sur + pour en creer une',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppTheme.textHint,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
               }
 
               return ListView.builder(
@@ -107,13 +138,17 @@ class FlashcardListScreen extends StatelessWidget {
   mainAxisSize: MainAxisSize.min,
   children: [
     if (card.memorized)
-      const Padding(
-        padding: EdgeInsets.only(right: 6),
-        child: Chip(label: Text('Memorized')),
+      Padding(
+        padding: const EdgeInsets.only(right: 6),
+        child: Chip(
+          label: const Text('Memorise'),
+          backgroundColor: AppTheme.successLight,
+          labelStyle: TextStyle(color: AppTheme.successColor, fontSize: 12),
+        ),
       ),
     Chip(label: Text(card.category)),
     IconButton(
-      icon: const Icon(Icons.delete),
+      icon: Icon(Icons.delete, color: AppTheme.errorColor),
       onPressed: () => controller.deleteCard(card.id),
     ),
   ],

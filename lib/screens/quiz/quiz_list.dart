@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:codajoy/services/quiz_service.dart';
 import 'package:codajoy/models/quiz_model.dart';
+import 'package:codajoy/theme/app_theme.dart';
 import 'package:get/get.dart';
 import 'quiz_detail_screen.dart';
 
@@ -43,31 +44,27 @@ class _QuizListScreenState extends State<QuizListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Liste des Quiz',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.blue[800],
+        title: const Text('Liste des Quiz'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios),
           onPressed: () => Get.back(),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: const Icon(Icons.refresh),
             onPressed: _refreshQuizzes,
             tooltip: 'Rafraîchir',
           ),
         ],
       ),
       body: Container(
-        color: Colors.grey[50],
+        color: AppTheme.backgroundColor,
         child: FutureBuilder<List<Quiz>>(
           future: _futureQuizzes,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
-                child: CircularProgressIndicator(color: Colors.blue),
+                child: CircularProgressIndicator(),
               );
             }
 
@@ -76,29 +73,21 @@ class _QuizListScreenState extends State<QuizListScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline,
-                        size: 64, color: Colors.red),
+                    Icon(Icons.error_outline,
+                        size: 64, color: AppTheme.errorColor),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'Erreur de chargement',
                       style: TextStyle(
                         fontSize: 18,
-                        color: Colors.red,
+                        color: AppTheme.errorColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: _refreshQuizzes,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 30, vertical: 12),
-                      ),
-                      child: const Text(
-                        'Réessayer',
-                        style: TextStyle(color: Colors.white),
-                      ),
+                      child: const Text('Réessayer'),
                     ),
                   ],
                 ),
@@ -109,14 +98,14 @@ class _QuizListScreenState extends State<QuizListScreen> {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.quiz_outlined, size: 80, color: Colors.grey),
-                    SizedBox(height: 16),
+                  children: [
+                    Icon(Icons.quiz_outlined, size: 80, color: AppTheme.textHint),
+                    const SizedBox(height: 16),
                     Text(
                       'Aucun quiz disponible',
                       style: TextStyle(
                         fontSize: 20,
-                        color: Colors.grey,
+                        color: AppTheme.textSecondary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -128,7 +117,7 @@ class _QuizListScreenState extends State<QuizListScreen> {
             final quizzes = snapshot.data!;
             return RefreshIndicator(
               onRefresh: _refreshQuizzes,
-              color: Colors.blue,
+              color: AppTheme.primaryColor,
               child: ListView.builder(
                 itemCount: quizzes.length,
                 padding: const EdgeInsets.all(16),
@@ -187,7 +176,7 @@ class QuizCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue[900],
+                        color: AppTheme.primaryDark,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -202,7 +191,7 @@ class QuizCard extends StatelessWidget {
                   quiz.description,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey[700],
+                    color: AppTheme.textSecondary,
                     height: 1.4,
                   ),
                   maxLines: 2,
@@ -226,13 +215,13 @@ class QuizCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 15),
                       Icon(Icons.question_answer,
-                          size: 16, color: Colors.purple),
+                          size: 16, color: AppTheme.primaryColor),
                       const SizedBox(width: 5),
                       Text(
                         '${quiz.questions.length} question${quiz.questions.length > 1 ? 's' : ''}',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.purple[700],
+                          color: AppTheme.primaryColor,
                         ),
                       ),
                     ],
@@ -329,7 +318,7 @@ class QuizCard extends StatelessWidget {
                                                       fontSize: 20,
                                                       fontWeight:
                                                           FontWeight.w500,
-                                                      color: Colors.blue[800],
+                                                      color: AppTheme.primaryColor,
                                                     ),
                                                   ),
                                                   SizedBox(height: 4),
@@ -339,7 +328,7 @@ class QuizCard extends StatelessWidget {
                                                       fontSize: 24,
                                                       fontWeight:
                                                           FontWeight.bold,
-                                                      color: Colors.blue[800],
+                                                      color: AppTheme.primaryColor,
                                                     ),
                                                   ),
                                                 ],
@@ -374,7 +363,7 @@ class QuizCard extends StatelessWidget {
                           icon: const Icon(Icons.score, size: 18),
                           label: const Text('Voir score'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
+                            backgroundColor: AppTheme.successColor,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 10),
                             shape: RoundedRectangleBorder(
@@ -391,13 +380,13 @@ class QuizCard extends StatelessWidget {
                                 'Voir',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Colors.blue[700],
+                                  color: AppTheme.primaryColor,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
                               const SizedBox(width: 4),
                               Icon(Icons.arrow_forward_ios,
-                                  size: 12, color: Colors.blue[700]),
+                                  size: 12, color: AppTheme.primaryColor),
                             ],
                           ),
                         ),
