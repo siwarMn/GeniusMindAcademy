@@ -5,6 +5,10 @@ import 'package:codajoy/screens/reclamation/reclamation_list_screen.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:codajoy/screens/flashcards/flashcard_list_screen.dart';
+import 'package:codajoy/screens/flashcards/flashcard_study_screen.dart';
+import 'package:codajoy/screens/reclamation/reclamation_list_screen.dart';
+import 'package:codajoy/controllers/flashcard_controller.dart';
 
 class DashboardItem {
   final String title;
@@ -95,7 +99,12 @@ class ProfileMenuController extends GetxController {
         icon: Icons.chat,
         color: Colors.purple,
         onTap: () => Get.to(ChatbotScreen()),
-      ),
+      ),  DashboardItem(
+        title: "FlashCards", // Renamed from Chat as per USER edit
+        icon: Icons.card_giftcard,
+        color: Colors.purple,
+        onTap: () => Get.to(FlashcardListScreen()),
+      )
     ];
   }
 
