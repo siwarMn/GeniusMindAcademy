@@ -2,6 +2,8 @@ import 'package:codajoy/screens/courses/courses_list_screen.dart';
 import 'package:codajoy/screens/quiz/quiz_list.dart';
 import 'package:codajoy/screens/components/chatbot.dart';
 import 'package:codajoy/screens/reclamation/reclamation_list_screen.dart';
+import 'package:codajoy/screens/test_screen.dart';
+import 'package:codajoy/screens/forum/forum_list_screen.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -32,7 +34,7 @@ class ProfileMenuController extends GetxController {
   var filteredItems = <DashboardItem>[].obs;
 
   final TextEditingController searchController = TextEditingController();
-
+  
   // User Details
   var userName = "".obs;
   var userImage = "".obs;
@@ -55,13 +57,13 @@ class ProfileMenuController extends GetxController {
     String? nom = await _storage.read(key: "nom");
     String? prenom = await _storage.read(key: "prenom");
     String? image = await _storage.read(key: "image");
-
+    
     if (nom != null || prenom != null) {
       userName.value = "${prenom ?? ''} ${nom ?? ''}".trim();
     } else {
       userName.value = "Utilisateur";
     }
-
+    
     if (image != null) {
       userImage.value = image;
     }
@@ -82,11 +84,10 @@ class ProfileMenuController extends GetxController {
         onTap: () => Get.to(QuizListScreen()),
       ),
       DashboardItem(
-        title: "Forums", // Renamed from Tests as per USER edit
-        icon: Icons.assignment_turned_in,
+        title: "Forums",
+        icon: Icons.forum,
         color: Colors.red,
-        onTap: () => Get.to(
-            QuizListScreen()), // Keeping original destination logic for now
+        onTap: () => Get.to(() => ForumListScreen()),
       ),
       DashboardItem(
         title: "Réclamation",

@@ -9,7 +9,7 @@ class ApiConfig {
   //
   // 1. Pour l'émulateur Android: utilisez 10.0.2.2 au lieu de localhost
   //    L'émulateur Android mappe 10.0.2.2 vers localhost de votre machine hôte
-  static const String baseUrl = 'http:/localhost:8082/api/v1';
+  static const String baseUrl = 'http://localhost:8082/api/v1';
 
   // 2. Pour iOS Simulator ou Web: utilisez localhost
   // static const String baseUrl = 'http://localhost:8082/api/v1';

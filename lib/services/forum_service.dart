@@ -3,6 +3,7 @@ import 'package:codajoy/config/api_config.dart';
 import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 abstract class ForumService {
   Future<List<ForumQuestion>> getQuestions({
@@ -323,14 +324,15 @@ class MockForumService implements ForumService {
 // ============================================================================
 
 class ApiForumService implements ForumService {
-  final String? authToken;
+  final _storage = const FlutterSecureStorage();
 
-  ApiForumService({this.authToken});
-
-  Map<String, String> get _headers => {
-        'Content-Type': 'application/json',
-        if (authToken != null) 'Authorization': 'Bearer $authToken',
-      };
+  Future<Map<String, String>> _headers() async {
+    final token = await _storage.read(key: 'jwt_token');
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
 
   @override
   Future<List<ForumQuestion>> getQuestions({
@@ -347,7 +349,7 @@ class ApiForumService implements ForumService {
 
       final response = await http.get(
         Uri.parse(url),
-        headers: _headers,
+        headers: await _headers(),
       );
 
       if (response.statusCode == 200) {
@@ -367,7 +369,7 @@ class ApiForumService implements ForumService {
     try {
       final response = await http.get(
         Uri.parse(ApiConfig.getQuestionById(id)),
-        headers: _headers,
+        headers: await _headers(),
       );
 
       if (response.statusCode == 200) {
@@ -388,16 +390,24 @@ class ApiForumService implements ForumService {
   Future<bool> createQuestion(
       String title, String description, List<String> tags) async {
     try {
+      print('=== FLUTTER: Creating question ===');
+      print('Title: $title');
+      print('Description: $description');
+      print('Tags: $tags');
+
       final response = await http.post(
         Uri.parse(ApiConfig.forumQuestions),
-        headers: _headers,
+        headers: await _headers(),
         body: json.encode({
           'title': title,
-          'content': description, // Backend uses 'content' field
+          'description': description,
           'tags': tags,
           'author': 'Current User', // TODO: Récupérer depuis l'auth
         }),
       );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
       return response.statusCode == 201 || response.statusCode == 200;
     } catch (e) {
@@ -411,7 +421,7 @@ class ApiForumService implements ForumService {
     try {
       final response = await http.post(
         Uri.parse(ApiConfig.forumAnswers),
-        headers: _headers,
+        headers: await _headers(),
         body: json.encode({
           'questionId': questionId.startsWith(RegExp(r'^\d+$')) ? int.parse(questionId) : questionId,
           'content': content,
@@ -431,7 +441,7 @@ class ApiForumService implements ForumService {
     try {
       final response = await http.post(
         Uri.parse(ApiConfig.voteQuestion(questionId)),
-        headers: _headers,
+        headers: await _headers(),
         body: json.encode({
           'isUpvote': isUpvote,
           'userId': 'user123', // TODO: Récupérer l'ID depuis l'auth
@@ -450,7 +460,7 @@ class ApiForumService implements ForumService {
     try {
       final response = await http.post(
         Uri.parse(ApiConfig.voteAnswer(answerId)),
-        headers: _headers,
+        headers: await _headers(),
         body: json.encode({
           'isUpvote': isUpvote,
           'userId': 'user123', // TODO: Récupérer l'ID depuis l'auth
@@ -469,7 +479,7 @@ class ApiForumService implements ForumService {
     try {
       final response = await http.put(
         Uri.parse(ApiConfig.acceptAnswer(answerId)),
-        headers: _headers,
+        headers: await _headers(),
       );
 
       return response.statusCode == 200;
