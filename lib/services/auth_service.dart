@@ -10,16 +10,16 @@ class AuthService {
   final Dio _dio = Dio();
   // Using localhost for Web, 10.0.2.2 for Android Emulator
   // Note: For Web to work with localhost, the backend must support CORS.
-  final String _baseUrl = kIsWeb 
-      ? 'http://localhost:8080/api/v1/auth' 
-      : 'http://10.0.2.2:8080/api/v1/auth';
+  final String _baseUrl = kIsWeb
+      ? 'http://localhost:8082/api/v1/auth'
+      : 'http://10.0.2.2:8082/api/v1/auth';
   final _storage = const FlutterSecureStorage();
 
   Future<AuthenticationResponse> register(
       XFile? file, RegisterRequest request) async {
     try {
       String requestJson = jsonEncode(request.toJson());
-      
+
       FormData formData = FormData.fromMap({
         'request': requestJson,
       });
@@ -52,7 +52,7 @@ class AuthService {
       );
 
       if (response.statusCode == 200) {
-        return AuthenticationResponse(); 
+        return AuthenticationResponse();
       } else {
         throw Exception('Registration failed: ${response.statusMessage}');
       }
@@ -63,7 +63,8 @@ class AuthService {
     }
   }
 
-  Future<AuthenticationResponse> authenticate(AuthenticationRequest request) async {
+  Future<AuthenticationResponse> authenticate(
+      AuthenticationRequest request) async {
     try {
       final response = await _dio.post(
         '$_baseUrl/authenticate',
@@ -77,7 +78,7 @@ class AuthService {
         }
         return authResponse;
       } else {
-         throw Exception('Authentication failed');
+        throw Exception('Authentication failed');
       }
     } on DioException catch (e) {
       throw Exception('Login error: ${e.response?.data ?? e.message}');
@@ -98,10 +99,11 @@ class AuthService {
         MultipartFile multipartFile;
 
         if (kIsWeb) {
-           final bytes = await image.readAsBytes();
-           multipartFile = MultipartFile.fromBytes(bytes, filename: fileName);
+          final bytes = await image.readAsBytes();
+          multipartFile = MultipartFile.fromBytes(bytes, filename: fileName);
         } else {
-           multipartFile = await MultipartFile.fromFile(image.path, filename: fileName);
+          multipartFile =
+              await MultipartFile.fromFile(image.path, filename: fileName);
         }
         formData.files.add(MapEntry('file', multipartFile));
       }
@@ -120,8 +122,11 @@ class AuthService {
         ),
       );
 
-      if (response.statusCode == null || response.statusCode! < 200 || response.statusCode! >= 300) {
-        throw Exception('Failed to update profile: Status ${response.statusCode}');
+      if (response.statusCode == null ||
+          response.statusCode! < 200 ||
+          response.statusCode! >= 300) {
+        throw Exception(
+            'Failed to update profile: Status ${response.statusCode}');
       }
     } on DioException catch (e) {
       throw Exception('Update error: ${e.response?.data ?? e.message}');

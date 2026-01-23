@@ -102,7 +102,10 @@ class ForumController extends GetxController {
       String title, String description, List<String> tags) async {
     try {
       isLoading.value = true;
+      print('=== ForumController: Creating question ===');
       final success = await forumService.createQuestion(title, description, tags);
+
+      print('Create question result: $success');
 
       if (success) {
         Get.snackbar(
@@ -113,13 +116,16 @@ class ForumController extends GetxController {
           colorText: Colors.white,
         );
 
-        // Reload questions and go back
+        // Reload questions and go back to forum list
+        print('Reloading questions...');
         await loadQuestions();
+        print('Navigating back to ForumListScreen...');
         Get.back();
       } else {
         throw Exception("Failed to create question");
       }
     } catch (e) {
+      print('Error in createQuestion: $e');
       Get.snackbar(
         "Erreur",
         "Impossible de créer la question",
