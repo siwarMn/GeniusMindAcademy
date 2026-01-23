@@ -11,7 +11,7 @@ import flutter_secure_storage_macos
 import google_sign_in_ios
 import path_provider_foundation
 import pdf_render
-import sqflite
+import sqflite_darwin
 import syncfusion_pdfviewer_macos
 import url_launcher_macos
 
