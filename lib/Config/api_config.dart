@@ -9,7 +9,7 @@ class ApiConfig {
   //
   // 1. Pour l'émulateur Android: utilisez 10.0.2.2 au lieu de localhost
   //    L'émulateur Android mappe 10.0.2.2 vers localhost de votre machine hôte
-  static const String baseUrl = 'http://localhost:8082/api/v1';
+  static const String baseUrl = 'http://localhost:8080/api/v1';
 
   // 2. Pour iOS Simulator ou Web: utilisez localhost
   // static const String baseUrl = 'http://localhost:8082/api/v1';
@@ -78,8 +78,6 @@ class ApiConfig {
     }
   }
 
-  // Base URL for the backend API
-  static String get baseUrl => 'http://$serverIp:$serverPort/api/v1/auth';
 
   // File endpoints
   static String get fileUploadUrl => '$baseUrl/File/Add';
@@ -96,5 +94,5 @@ class ApiConfig {
   }
 
 
-  }
+
 }
